@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0F6E56">
+<title>Rekod Khatam Al-Quran 2026 — SJK(C) Ladang Grisek</title>
+<link rel="manifest" href="manifest.json">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --teal:#0F6E56;--teal-light:#1D9E75;--teal-50:#E1F5EE;--teal-100:#9FE1CB;
+  --green:#3B6D11;--green-50:#EAF3DE;
+  --amber:#854F0B;--amber-50:#FAEEDA;--amber-400:#BA7517;
+  --red:#A32D2D;--red-50:#FCEBEB;--red-400:#E24B4A;
+  --blue:#185FA5;--blue-50:#E6F1FB;--blue-400:#378ADD;
+  --bg:#F6FAF8;--surface:#fff;--border:#E2EDE9;
+  --text:#1a2e28;--text2:#4a7060;--text3:#8aaa9e;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
+
+/* NAV */
+nav{background:var(--teal);color:#fff;padding:0 16px;display:flex;align-items:center;gap:0;position:sticky;top:0;z-index:50;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.nav-brand{display:flex;align-items:center;gap:10px;padding:12px 0;margin-right:8px}
+.nav-brand .icon{width:32px;height:32px;background:rgba(255,255,255,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.nav-brand .title{font-size:13px;font-weight:600;line-height:1.3}
+.nav-brand .sub{font-size:10px;opacity:.75}
+.nav-tabs{display:flex;gap:0;overflow-x:auto;-webkit-overflow-scrolling:touch;flex:1;scrollbar-width:none}
+.nav-tabs::-webkit-scrollbar{display:none}
+.nav-tab{padding:14px 14px;font-size:12px;cursor:pointer;opacity:.7;border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s;color:#fff}
+.nav-tab:hover{opacity:.9}
+.nav-tab.active{opacity:1;border-bottom-color:#fff;font-weight:600}
+.save-indicator{font-size:11px;padding:4px 10px;background:rgba(255,255,255,.15);border-radius:20px;margin-left:auto;white-space:nowrap;transition:all .3s;min-width:90px;text-align:center}
+.save-indicator.saving{background:rgba(255,255,255,.15)}
+.save-indicator.saved{background:rgba(255,255,255,.25)}
+
+/* LAYOUT */
+.page{display:none;padding:16px;max-width:1100px;margin:0 auto}
+.page.active{display:block}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:14px}
+.card-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface)}
+.card-title{font-size:13px;font-weight:600;color:var(--text)}
+.card-body{padding:16px}
+
+/* STATS GRID */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center}
+.stat .emoji{font-size:22px;margin-bottom:6px}
+.stat .val{font-size:24px;font-weight:700;color:var(--teal);line-height:1}
+.stat .lbl{font-size:11px;color:var(--text2);margin-top:4px;line-height:1.3}
+
+/* SCHOOL BANNER */
+.banner{background:linear-gradient(135deg,var(--teal) 0%,var(--teal-light) 100%);color:#fff;border-radius:12px;padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.banner-left{display:flex;align-items:center;gap:12px}
+.banner-icon{width:44px;height:44px;background:rgba(255,255,255,.2);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+.banner-title{font-size:15px;font-weight:700}
+.banner-meta{font-size:12px;opacity:.8;margin-top:2px}
+.banner-badges{display:flex;gap:6px;flex-wrap:wrap}
+.pill{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(255,255,255,.2);color:#fff}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:8px 14px;border-radius:8px;font-size:13px;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text);transition:all .15s;font-family:inherit}
+.btn:hover{background:var(--bg)}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--teal);color:#fff;border-color:var(--teal)}
+.btn-primary:hover{background:var(--teal-light);border-color:var(--teal-light)}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-danger{background:var(--red-50);color:var(--red);border-color:#f0c0c0}
+.btn-group{display:flex;gap:6px;flex-wrap:wrap}
+
+/* BADGES */
+.badge{display:inline-block;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-green{background:var(--green-50);color:var(--green)}
+.badge-teal{background:var(--teal-50);color:var(--teal)}
+.badge-amber{background:var(--amber-50);color:var(--amber)}
+.badge-red{background:var(--red-50);color:var(--red)}
+.badge-blue{background:var(--blue-50);color:var(--blue)}
+
+/* FORM */
+.form-group{margin-bottom:12px}
+.form-label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px}
+.form-input,.form-select{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--text);background:var(--surface);font-family:inherit;outline:none;transition:border .15s}
+.form-input:focus,.form-select:focus{border-color:var(--teal)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{padding:10px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--text2);background:var(--bg);border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafffe}
+
+/* PROGRESS */
+.pbar{height:5px;background:var(--bg);border-radius:3px;overflow:hidden;margin-top:4px;width:100px}
+.pfill{height:100%;border-radius:3px;transition:width .4s}
+
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;align-items:center;justify-content:center;padding:16px}
+.overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:16px;width:100%;max-width:440px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);z-index:1}
+.modal-title{font-size:15px;font-weight:700;color:var(--text)}
+.modal-close{width:30px;height:30px;border-radius:50%;background:var(--bg);border:none;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;color:var(--text2)}
+.modal-body{padding:20px}
+.modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
+
+/* NOTIF */
+.notif{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.notif:last-child{border-bottom:none}
+.notif-dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0}
+.notif-text{font-size:13px;line-height:1.5}
+.notif-time{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* REKOD TABLE */
+.rt th{font-size:10px;padding:7px 6px;text-align:center}
+.rt td{font-size:11px;padding:6px;text-align:center;cursor:pointer}
+.rt td:first-child{text-align:left;font-size:12px;position:sticky;left:0;background:var(--surface);z-index:1;min-width:130px;font-weight:500}
+.rt th:first-child{position:sticky;left:0;background:var(--bg);z-index:2;min-width:130px}
+.rt td:hover{background:var(--teal-50)}
+.cell-cp{background:var(--amber-50);color:var(--amber);font-weight:600;border-radius:4px}
+.cell-khatam{background:var(--green-50);color:var(--green);font-weight:700;font-size:10px}
+.cell-ms{border-radius:4px;font-weight:600}
+.cell-red{background:var(--red-50);color:var(--red-400)}
+.cell-orange{background:#FFF3E0;color:#E65100}
+.cell-blue{background:var(--blue-50);color:var(--blue-400)}
+.cell-green{background:var(--green-50);color:var(--green)}
+
+/* LOG */
+.log-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);align-items:flex-start}
+.log-item:last-child{border-bottom:none}
+.log-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.log-title{font-size:13px;font-weight:500}
+.log-meta{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--teal);color:#fff;padding:10px 20px;border-radius:30px;font-size:13px;z-index:200;display:none;align-items:center;gap:6px;box-shadow:0 4px 20px rgba(0,0,0,.2);white-space:nowrap}
+.toast.show{display:flex}
+
+/* LOADING */
+.loading{text-align:center;padding:40px;color:var(--text2)}
+.loading .spin{display:inline-block;width:24px;height:24px;border:2px solid var(--teal-100);border-top-color:var(--teal);border-radius:50%;animation:spin .7s linear infinite;margin-bottom:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* AVATAR */
+.av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+
+/* RESPONSIVE */
+@media(max-width:600px){
+  .form-row{grid-template-columns:1fr}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  nav{padding:0 10px}
+  .nav-brand .title{font-size:12px}
+  .page{padding:12px}
+  .banner{flex-direction:column}
+}
+
+/* CHART */
+.chart-bars{display:flex;align-items:flex-end;gap:6px;height:80px;margin-top:8px}
+.chart-col{display:flex;flex-direction:column;align-items:center;flex:1}
+.chart-bar{width:100%;border-radius:4px 4px 0 0;min-height:4px;transition:height .4s}
+.chart-lbl{font-size:9px;color:var(--text3);margin-top:3px}
+
+.empty{text-align:center;padding:30px;color:var(--text3)}
+.search-row{display:flex;gap:8px;margin-bottom:12px;align-items:center;flex-wrap:wrap}
+.search-inp{flex:1;min-width:180px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;font-family:inherit}
+.search-inp:focus{border-color:var(--teal)}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    <div class="icon">📖</div>
+    <div>
+      <div class="title">Khatam Al-Quran</div>
+      <div class="sub">SJK(C) Ladang Grisek</div>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <div class="nav-tab active" onclick="showPage('dashboard',this)">📊 Dashboard</div>
+    <div class="nav-tab" onclick="showPage('murid',this)">👥 Murid</div>
+    <div class="nav-tab" onclick="showPage('rekod',this)">📝 Rekod</div>
+    <div class="nav-tab" onclick="showPage('laporan',this)">📈 Laporan</div>
+    <div class="nav-tab" onclick="showPage('log',this)">📋 Log</div>
+  </div>
+  <div class="save-indicator" id="save-ind">✓ Tersimpan</div>
+</nav>
+
+<!-- ===== DASHBOARD ===== -->
+<div class="page active" id="page-dashboard">
+  <div class="banner">
+    <div class="banner-left">
+      <div class="banner-icon">🕌</div>
+      <div>
+        <div class="banner-title">SJK(C) Ladang Grisek</div>
+        <div class="banner-meta">Kod: JBC1049 · Tahun 6 · Sesi 2026</div>
+      </div>
+    </div>
+    <div class="banner-badges">
+      <span class="pill">📅 2026</span>
+      <span class="pill">🏫 Tahun 6</span>
+      <span class="pill" id="sync-pill">🔄 Sedang sync...</span>
+    </div>
+  </div>
+
+  <div class="stats" id="stats-grid">
+    <div class="stat"><div class="emoji">📖</div><div class="val" id="s-total">—</div><div class="lbl">Jumlah Murid</div></div>
+    <div class="stat"><div class="emoji">✅</div><div class="val" id="s-khatam" style="color:var(--green)">—</div><div class="lbl">Murid Khatam</div></div>
+    <div class="stat"><div class="emoji">🟡</div><div class="val" id="s-belum" style="color:var(--amber-400)">—</div><div class="lbl">Belum Khatam</div></div>
+    <div class="stat"><div class="emoji">📈</div><div class="val" id="s-pct" style="color:var(--blue)">—</div><div class="lbl">% Kemajuan</div></div>
+    <div class="stat"><div class="emoji">👦</div><div class="val" id="s-laki">—</div><div class="lbl">Lelaki</div></div>
+    <div class="stat"><div class="emoji">👧</div><div class="val" id="s-pmpn">—</div><div class="lbl">Perempuan</div></div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 320px;gap:14px" id="dash-panels">
+    <div class="card">
+      <div class="card-header"><span class="card-title">🏃 Kemajuan Murid</span><button class="btn btn-sm" onclick="loadData()">🔄 Refresh</button></div>
+      <div class="card-body" style="padding:0 16px" id="dash-murid-list"><div class="loading"><div class="spin"></div><div>Memuatkan data...</div></div></div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-header"><span class="card-title">🔔 Notifikasi</span></div>
+        <div class="card-body" style="padding:0 16px" id="dash-notif"><div class="empty">Tiada notifikasi</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">📊 Carta Warna</span></div>
+        <div class="card-body">
+          <div style="font-size:11px;color:var(--text2);margin-bottom:6px">Bilangan murid mengikut peringkat</div>
+          <div class="chart-bars" id="dash-chart"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;font-size:10px">
+            <span>🔴 1–199</span><span>🟠 200–399</span><span>🔵 400–603</span><span>🟢 604 Khatam</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MURID ===== -->
+<div class="page" id="page-murid">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+    <h2 style="font-size:16px;font-weight:700">👥 Senarai Murid</h2>
+    <div class="btn-group">
+      <button class="btn btn-sm" onclick="cetakMurid()">🖨️ Cetak</button>
+      <button class="btn btn-primary" onclick="openModal('modal-tambah')">+ Tambah Murid</button>
+    </div>
+  </div>
+  <div class="search-row">
+    <input class="search-inp" placeholder="🔍 Cari nama murid..." oninput="filterMurid(this.value)" id="inp-cari">
+    <select class="form-select" style="width:auto;min-width:130px" onchange="filterStatus(this.value)">
+      <option value="">Semua Status</option>
+      <option>Aktif</option><option>Berpindah</option><option>Berhenti</option>
+    </select>
+  </div>
+  <div class="card">
+    <div class="tbl-wrap">
+      <table id="tbl-murid">
+        <thead><tr>
+          <th>Bil</th><th>Nama Murid</th><th>Jantina</th><th>Status</th>
+          <th>Muka Surat</th><th>Status Khatam</th><th>Tindakan</th>
+        </tr></thead>
+        <tbody id="tbody-murid"><tr><td colspan="7" class="loading"><div class="spin"></div><br>Memuatkan...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card" style="padding:12px 16px;font-size:12px;color:var(--text2)">
+    💡 Murid berpindah tidak dipadam — status ditukar kepada "Berpindah" dan rekod disimpan.
+  </div>
+</div>
+
+<!-- ===== REKOD ===== -->
+<div class="page" id="page-rekod">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+    <h2 style="font-size:16px;font-weight:700">📝 Rekod Bacaan</h2>
+    <span style="font-size:12px;color:var(--text2)">Jun — Dis 2026 · Klik sel untuk kemaskini</span>
+  </div>
+  <div class="card">
+    <div class="tbl-wrap">
+      <table class="rt" id="tbl-rekod">
+        <thead id="rekod-thead"></thead>
+        <tbody id="rekod-tbody"><tr><td colspan="30" class="loading"><div class="spin"></div><br>Memuatkan...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;font-size:11px;margin-top:8px;color:var(--text2)">
+    <span style="background:var(--red-50);color:var(--red-400);padding:2px 8px;border-radius:4px">🔴 1–199</span>
+    <span style="background:#FFF3E0;color:#E65100;padding:2px 8px;border-radius:4px">🟠 200–399</span>
+    <span style="background:var(--blue-50);color:var(--blue-400);padding:2px 8px;border-radius:4px">🔵 400–603</span>
+    <span style="background:var(--green-50);color:var(--green);padding:2px 8px;border-radius:4px">🟢 604 Khatam</span>
+    <span style="background:var(--amber-50);color:var(--amber);padding:2px 8px;border-radius:4px">🟡 Cuti Period</span>
+  </div>
+</div>
+
+<!-- ===== LAPORAN ===== -->
+<div class="page" id="page-laporan">
+  <h2 style="font-size:16px;font-weight:700;margin-bottom:14px">📈 Laporan</h2>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:16px">
+    <div class="card" style="cursor:pointer" onclick="cetakLaporan('bulanan')">
+      <div class="card-body" style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:32px">📅</div>
+        <div><div style="font-weight:600;font-size:14px">Laporan Bulanan</div><div style="font-size:12px;color:var(--text2);margin-top:2px">Kemajuan Jun – Dis 2026</div></div>
+      </div>
+    </div>
+    <div class="card" style="cursor:pointer" onclick="cetakLaporan('tahunan')">
+      <div class="card-body" style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:32px">📊</div>
+        <div><div style="font-weight:600;font-size:14px">Laporan Tahunan</div><div style="font-size:12px;color:var(--text2);margin-top:2px">Ringkasan keseluruhan 2026</div></div>
+      </div>
+    </div>
+    <div class="card" style="cursor:pointer" onclick="cetakLaporan('kelas')">
+      <div class="card-body" style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:32px">🏫</div>
+        <div><div style="font-weight:600;font-size:14px">Laporan Kelas</div><div style="font-size:12px;color:var(--text2);margin-top:2px">Pencapaian keseluruhan kelas</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="card-title">📊 Pecahan Status</span><button class="btn btn-sm btn-primary" onclick="window.print()">🖨️ Cetak</button></div>
+    <div class="card-body" id="laporan-body"><div class="loading"><div class="spin"></div><br>Memuatkan...</div></div>
+  </div>
+</div>
+
+<!-- ===== LOG ===== -->
+<div class="page" id="page-log">
+  <h2 style="font-size:16px;font-weight:700;margin-bottom:14px">📋 Log Aktiviti Guru</h2>
+  <div class="card">
+    <div class="card-body" style="padding:0 16px" id="log-body"><div class="loading"><div class="spin"></div><br>Memuatkan...</div></div>
+  </div>
+</div>
+
+<!-- ===== MODALS ===== -->
+<div class="overlay" id="modal-tambah">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">➕ Tambah Murid Baharu</div>
+      <button class="modal-close" onclick="closeModal('modal-tambah')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Nama Penuh Murid</label><input class="form-input" id="f-nama" placeholder="Masukkan nama penuh"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Jantina</label>
+          <select class="form-select" id="f-jantina"><option value="L">Lelaki</option><option value="P">Perempuan</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">Status</label>
+          <select class="form-select" id="f-status"><option>Aktif</option><option>Berpindah</option><option>Berhenti</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Muka Surat Semasa</label><input class="form-input" id="f-ms" type="number" placeholder="0" min="0" max="604"></div>
+        <div class="form-group"><label class="form-label">Tarikh Daftar</label><input class="form-input" id="f-tarikh" type="date"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-tambah')">Batal</button>
+      <button class="btn btn-primary" onclick="tambahMurid()">✓ Simpan Murid</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="modal-edit">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">✏️ Edit Maklumat Murid</div>
+      <button class="modal-close" onclick="closeModal('modal-edit')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="e-id">
+      <div class="form-group"><label class="form-label">Nama Penuh Murid</label><input class="form-input" id="e-nama"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Jantina</label>
+          <select class="form-select" id="e-jantina"><option value="L">Lelaki</option><option value="P">Perempuan</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">Status</label>
+          <select class="form-select" id="e-status"><option>Aktif</option><option>Berpindah</option><option>Berhenti</option></select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Muka Surat Semasa</label><input class="form-input" id="e-ms" type="number" min="0" max="604"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-edit')">Batal</button>
+      <button class="btn btn-primary" onclick="simpanEdit()">✓ Kemaskini</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="modal-rekod">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="rekod-modal-title">📝 Kemaskini Rekod</div>
+      <button class="modal-close" onclick="closeModal('modal-rekod')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="r-murid-id">
+      <input type="hidden" id="r-minggu">
+      <div class="form-group"><label class="form-label">Tarikh Bacaan</label><input class="form-input" id="r-tarikh" type="date"></div>
+      <div class="form-group"><label class="form-label">Jenis Rekod</label>
+        <select class="form-select" id="r-jenis" onchange="toggleRekodJenis(this.value)">
+          <option value="ms">Muka Surat</option>
+          <option value="cp">Cuti Period</option>
+          <option value="th">Tidak Hadir</option>
+        </select>
+      </div>
+      <div id="r-ms-wrap" class="form-group"><label class="form-label">Muka Surat Sehingga (1–604)</label><input class="form-input" id="r-ms" type="number" min="1" max="604" placeholder="contoh: 350"></div>
+      <div class="form-group"><label class="form-label">Catatan</label>
+        <select class="form-select" id="r-catatan">
+          <option value="">— Pilih —</option>
+          <option>Bacaan di sekolah</option>
+          <option>Bacaan di rumah</option>
+          <option>Bacaan dengan ibu bapa</option>
+          <option>Catatan lain</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-rekod')">Tutup</button>
+      <button class="btn btn-primary" onclick="simpanRekod()">💾 Simpan Rekod</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbwgjSOm6pEjRVQ4KBZW-CjBej239XN9UmG1WHtYL17Db63UOog8GWS_wFKoY89ye3Sz5A/exec';
+
+const MURID_AWAL = [
+  {id:1,nama:'Ahmad Aryan Arsyad Bin Ahmad Hilmi Nazmi',jantina:'L',status:'Aktif',ms:89,daftar:'2026-06-01'},
+  {id:2,nama:'Aris Aneesa Awliya Binti Mohd Zaki',jantina:'P',status:'Aktif',ms:'CP',daftar:'2026-06-01'},
+  {id:3,nama:'Fiska Izz Zara Binti Ardi Firhan Shah',jantina:'P',status:'Aktif',ms:549,daftar:'2026-06-01'},
+  {id:4,nama:'Malaiqa Zendralisa Binti Ahmad Zamzahuri',jantina:'P',status:'Aktif',ms:190,daftar:'2026-06-01'},
+  {id:5,nama:'Mohamad Aakif Amsyar Bin Mohamad Alifi Alif',jantina:'L',status:'Aktif',ms:594,daftar:'2026-06-01'},
+  {id:6,nama:'Mohamad Ammar Rizqi Bin Mohamad Khaidir',jantina:'L',status:'Aktif',ms:291,daftar:'2026-06-01'},
+  {id:7,nama:'Muhamad Ikram Hazimi Bin Sakimin',jantina:'L',status:'Aktif',ms:354,daftar:'2026-06-01'},
+  {id:8,nama:'Muhammad Hadif Iffat Bin Mohamad Ghazali',jantina:'L',status:'Aktif',ms:371,daftar:'2026-06-01'},
+  {id:9,nama:'Muhammad Mishary Rashid Bin Abdullah Kutty',jantina:'L',status:'Aktif',ms:588,daftar:'2026-06-01'},
+  {id:10,nama:'Nur Aina Insyirah Binti Azharudin',jantina:'P',status:'Aktif',ms:468,daftar:'2026-06-01'},
+  {id:11,nama:'Nur Ariffizie Dania Binti Muhammad Firdaus',jantina:'P',status:'Aktif',ms:447,daftar:'2026-06-01'},
+  {id:12,nama:'Nur Dhyfyna Ellysya Binti Mohd Shahrulniza',jantina:'P',status:'Aktif',ms:5,daftar:'2026-06-01'},
+  {id:13,nama:'Nur Hasya Khayla Binti Ahmad Shah',jantina:'P',status:'Aktif',ms:0,daftar:'2026-06-01'},
+  {id:14,nama:'Nurul Syafiqah Syahirah Binti Mohd Sani',jantina:'P',status:'Aktif',ms:560,daftar:'2026-06-01'},
+  {id:15,nama:'Tuan Nia Nuryna Naurah Binti Tuan Izuddin',jantina:'P',status:'Aktif',ms:323,daftar:'2026-06-01'},
+];
+
+let muridList = [];
+let rekodList = [];
+let logList = JSON.parse(localStorage.getItem('logList')||'[]');
+const BULAN = ['Jun','Jul','Ogos','Sep','Okt','Nov','Dis'];
+const MINGGU = ['M1','M2','M3','M4'];
+
+function getMs(ms){
+  if(ms==='CP') return {num:null,label:'CP',cls:'cell-cp'};
+  const n=parseInt(ms)||0;
+  if(n<=0) return {num:0,label:'—',cls:''};
+  if(n>=604) return {num:n,label:'604 ✓',cls:'cell-ms cell-green'};
+  if(n>=400) return {num:n,label:String(n),cls:'cell-ms cell-blue'};
+  if(n>=200) return {num:n,label:String(n),cls:'cell-ms cell-orange'};
+  return {num:n,label:String(n),cls:'cell-ms cell-red'};
+}
+
+function getMsColor(ms){
+  if(ms==='CP') return {bg:'var(--amber-50)',text:'var(--amber)',bar:'var(--amber-400)'};
+  const n=parseInt(ms)||0;
+  if(n>=604) return {bg:'var(--green-50)',text:'var(--green)',bar:'#639922'};
+  if(n>=400) return {bg:'var(--blue-50)',text:'var(--blue)',bar:'var(--blue-400)'};
+  if(n>=200) return {bg:'#FFF3E0',text:'#E65100',bar:'#EF9F27'};
+  if(n>0) return {bg:'var(--red-50)',text:'var(--red-400)',bar:'var(--red-400)'};
+  return {bg:'#f5f5f5',text:'var(--text3)',bar:'#ccc'};
+}
+
+function getInitials(nama){return nama.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase();}
+function now(){return new Date().toLocaleString('ms-MY',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});}
+
+async function loadData(){
+  setSaveInd('🔄 Sync...','saving');
+  try {
+    const res = await fetch(API);
+    const data = await res.json();
+    if(data && data.length > 0){
+      muridList = data.map(r=>({
+        id: r.id, nama: r.nama, jantina: r.jantina,
+        status: r.status, ms: r.ms, daftar: r.daftar
+      }));
+      localStorage.setItem('muridCache', JSON.stringify(muridList));
+    } else {
+      muridList = JSON.parse(localStorage.getItem('muridCache')||'null') || MURID_AWAL;
+    }
+  } catch(e){
+    muridList = JSON.parse(localStorage.getItem('muridCache')||'null') || MURID_AWAL;
+    setSaveInd('📶 Offline','saving');
+  }
+  rekodList = JSON.parse(localStorage.getItem('rekodList')||'[]');
+  renderAll();
+  setSaveInd('✓ Tersimpan','saved');
+  document.getElementById('sync-pill').textContent='✓ Tersync';
+}
+
+async function postData(payload){
+  setSaveInd('💾 Menyimpan...','saving');
+  try{
+    await fetch(API,{method:'POST',body:JSON.stringify(payload)});
+    setSaveInd('✓ Tersimpan','saved');
+  } catch(e){
+    setSaveInd('📶 Disimpan (offline)','saving');
+  }
+}
+
+function setSaveInd(txt,cls){
+  const el=document.getElementById('save-ind');
+  el.textContent=txt;
+  el.className='save-indicator '+cls;
+}
+
+function renderAll(){
+  renderDashboard();
+  renderMuridTable(muridList);
+  renderRekodTable();
+  renderLaporan();
+  renderLog();
+}
+
+function renderDashboard(){
+  const aktif=muridList.filter(m=>m.status==='Aktif');
+  const khatam=aktif.filter(m=>parseInt(m.ms)>=604).length;
+  const total=muridList.length;
+  const laki=muridList.filter(m=>m.jantina==='L').length;
+  const pmpn=muridList.filter(m=>m.jantina==='P').length;
+  const msNums=aktif.map(m=>parseInt(m.ms)||0).filter(n=>n>0);
+  const avgMs=msNums.length?Math.round(msNums.reduce((a,b)=>a+b,0)/msNums.length):0;
+  const pct=Math.round(avgMs/604*100);
+
+  document.getElementById('s-total').textContent=total;
+  document.getElementById('s-khatam').textContent=khatam;
+  document.getElementById('s-belum').textContent=total-khatam;
+  document.getElementById('s-pct').textContent=pct+'%';
+  document.getElementById('s-laki').textContent=laki;
+  document.getElementById('s-pmpn').textContent=pmpn;
+
+  const sorted=[...muridList].sort((a,b)=>(parseInt(b.ms)||0)-(parseInt(a.ms)||0));
+  document.getElementById('dash-murid-list').innerHTML=sorted.map(m=>{
+    const c=getMsColor(m.ms);
+    const n=parseInt(m.ms)||0;
+    const pct=Math.min(100,Math.round(n/604*100));
+    const msLabel=m.ms==='CP'?'Cuti Period':n===0?'Tiada Rekod':`${n} / 604`;
+    return `<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)">
+      <div class="av" style="background:${c.bg};color:${c.text}">${getInitials(m.nama)}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500">${m.nama.split(' ').slice(0,3).join(' ')}</div>
+        <div class="pbar"><div class="pfill" style="width:${pct}%;background:${c.bar}"></div></div>
+      </div>
+      <div style="font-size:11px;font-weight:600;color:${c.text};white-space:nowrap">${msLabel}</div>
+    </div>`;
+  }).join('');
+
+  const notifs=[];
+  muridList.forEach(m=>{
+    const n=parseInt(m.ms)||0;
+    const baki=604-n;
+    if(n>0&&baki<=20&&n<604) notifs.push({txt:`<b>${m.nama.split(' ')[0]}</b> berbaki <b>${baki}</b> muka surat untuk khatam! 🎉`,dot:'var(--amber-400)'});
+    if(m.ms===0||m.ms==='') notifs.push({txt:`<b>${m.nama.split(' ')[0]}</b> belum ada rekod muka surat`,dot:'var(--red-400)'});
+  });
+  document.getElementById('dash-notif').innerHTML=notifs.length
+    ? notifs.map(n=>`<div class="notif"><div class="notif-dot" style="background:${n.dot}"></div><div><div class="notif-text">${n.txt}</div></div></div>`).join('')
+    : '<div class="empty">Tiada notifikasi</div>';
+
+  const r=[0,0,0,0],cols=['#E24B4A','#EF9F27','#378ADD','#639922'],labels=['1–199','200–399','400–603','604+'];
+  muridList.forEach(m=>{
+    const n=parseInt(m.ms)||0;
+    if(n>=604)r[3]++;else if(n>=400)r[2]++;else if(n>=200)r[1]++;else if(n>0)r[0]++;
+  });
+  const mx=Math.max(...r,1);
+  document.getElementById('dash-chart').innerHTML=r.map((v,i)=>`
+    <div class="chart-col">
+      <div style="font-size:10px;font-weight:600;color:${cols[i]};margin-bottom:2px">${v}</div>
+      <div class="chart-bar" style="height:${Math.round(v/mx*60)+4}px;background:${cols[i]}"></div>
+      <div class="chart-lbl">${labels[i]}</div>
+    </div>`).join('');
+}
+
+function renderMuridTable(data){
+  document.getElementById('tbody-murid').innerHTML=data.length===0
+    ? '<tr><td colspan="7" class="empty">Tiada murid ditemui</td></tr>'
+    : data.map((m,i)=>{
+      const c=getMsColor(m.ms);
+      const n=parseInt(m.ms)||0;
+      const pct=Math.min(100,Math.round(n/604*100));
+      const khatam=n>=604;
+      const msLabel=m.ms==='CP'?'Cuti Period':n===0?'Tiada Rekod':n;
+      return `<tr>
+        <td style="color:var(--text3)">${i+1}</td>
+        <td><div style="display:flex;align-items:center;gap:8px">
+          <div class="av" style="background:${c.bg};color:${c.text};font-size:10px">${getInitials(m.nama)}</div>
+          <span style="font-size:12px">${m.nama}</span></div></td>
+        <td><span class="badge ${m.jantina==='L'?'badge-blue':'badge-teal'}">${m.jantina==='L'?'Lelaki':'Perempuan'}</span></td>
+        <td><span class="badge ${m.status==='Aktif'?'badge-green':m.status==='Berpindah'?'badge-amber':'badge-red'}">${m.status}</span></td>
+        <td><div style="font-weight:600;color:${c.text}">${msLabel}</div>
+          ${n>0&&m.ms!=='CP'?`<div class="pbar"><div class="pfill" style="width:${pct}%;background:${c.bar}"></div></div>`:''}
+        </td>
+        <td>${khatam?'<span class="badge badge-green">🏆 KHATAM</span>':'<span class="badge badge-amber">🟡 Belum Khatam</span>'}</td>
+        <td><div style="display:flex;gap:4px">
+          <button class="btn btn-sm" onclick="editMurid(${m.id})">✏️</button>
+          <button class="btn btn-sm btn-danger" onclick="padamMurid(${m.id})">🔄</button>
+        </div></td>
+      </tr>`;
+    }).join('');
+}
+
+function renderRekodTable(){
+  const cols=[['Jun',4],['Jul',4],['Ogos',4],['Sep',4],['Okt',4],['Nov',4],['Dis',4]];
+  let hdr=`<tr><th>Nama Murid</th>`;
+  cols.forEach(([b,w])=>{for(let i=1;i<=w;i++) hdr+=`<th>${b}<br>M${i}</th>`;});
+  document.getElementById('rekod-thead').innerHTML=hdr+'</tr>';
+
+  document.getElementById('rekod-tbody').innerHTML=muridList.map(m=>{
+    let row=`<tr><td title="${m.nama}">${m.nama.split(' ').slice(0,3).join(' ')}</td>`;
+    cols.forEach(([b,w])=>{
+      for(let i=1;i<=w;i++){
+        const key=`${m.id}_${b}_M${i}`;
+        const rec=rekodList.find(r=>r.muridId==m.id&&r.minggu===`${b} M${i}`);
+        let cell='—',cls='';
+        if(rec){
+          if(rec.jenis==='cp'){cell='CP';cls='cell-cp';}
+          else if(rec.jenis==='th'){cell='TH';cls='';}
+          else {const x=getMs(rec.ms);cell=x.label;cls=x.cls;}
+        } else if(b==='Jun'&&i===1&&m.ms){
+          const x=getMs(m.ms);cell=x.label;cls=x.cls;
+        }
+        row+=`<td class="${cls}" onclick="openRekodModal(${m.id},'${m.nama}','${b} M${i}')" title="${m.nama} · ${b} M${i}">${cell}</td>`;
+      }
+    });
+    return row+'</tr>';
+  }).join('');
+}
+
+function renderLaporan(){
+  const total=muridList.length;
+  const khatam=muridList.filter(m=>parseInt(m.ms)>=604).length;
+  const r=[0,0,0,0];
+  muridList.forEach(m=>{
+    const n=parseInt(m.ms)||0;
+    if(n>=604)r[3]++;else if(n>=400)r[2]++;else if(n>=200)r[1]++;else if(n>0)r[0]++;
+  });
+  const pct=total?Math.round(khatam/total*100):0;
+  document.getElementById('laporan-body').innerHTML=`
+    <div style="margin-bottom:14px">
+      <div style="font-size:12px;color:var(--text2);margin-bottom:6px">Kemajuan Khatam Kelas</div>
+      <div style="background:var(--bg);border-radius:8px;height:20px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:var(--teal);border-radius:8px;transition:width .5s"></div>
+      </div>
+      <div style="font-size:12px;color:var(--text2);margin-top:4px">${khatam} / ${total} murid khatam (${pct}%)</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">
+      <div style="text-align:center;padding:12px;background:var(--red-50);border-radius:8px"><div style="font-size:20px;font-weight:700;color:var(--red-400)">${r[0]}</div><div style="font-size:11px;color:var(--red);margin-top:2px">🔴 1–199</div></div>
+      <div style="text-align:center;padding:12px;background:#FFF3E0;border-radius:8px"><div style="font-size:20px;font-weight:700;color:#E65100">${r[1]}</div><div style="font-size:11px;color:#E65100;margin-top:2px">🟠 200–399</div></div>
+      <div style="text-align:center;padding:12px;background:var(--blue-50);border-radius:8px"><div style="font-size:20px;font-weight:700;color:var(--blue-400)">${r[2]}</div><div style="font-size:11px;color:var(--blue);margin-top:2px">🔵 400–603</div></div>
+      <div style="text-align:center;padding:12px;background:var(--green-50);border-radius:8px"><div style="font-size:20px;font-weight:700;color:var(--green)">${r[3]}</div><div style="font-size:11px;color:var(--green);margin-top:2px">🟢 604 Khatam</div></div>
+    </div>
+    <table style="width:100%;font-size:13px;border-collapse:collapse">
+      <tr style="background:var(--bg)"><th style="padding:8px 12px;text-align:left;font-size:12px;border-bottom:1px solid var(--border)">Nama Murid</th><th style="padding:8px 12px;font-size:12px;border-bottom:1px solid var(--border)">Muka Surat</th><th style="padding:8px 12px;font-size:12px;border-bottom:1px solid var(--border)">Status</th></tr>
+      ${muridList.map(m=>{
+        const n=parseInt(m.ms)||0;const c=getMsColor(m.ms);
+        return `<tr><td style="padding:8px 12px;border-bottom:1px solid var(--border)">${m.nama}</td>
+          <td style="padding:8px 12px;text-align:center;font-weight:600;color:${c.text};border-bottom:1px solid var(--border)">${m.ms==='CP'?'Cuti Period':n||'—'}</td>
+          <td style="padding:8px 12px;text-align:center;border-bottom:1px solid var(--border)">${n>=604?'<span class="badge badge-green">🏆 Khatam</span>':'<span class="badge badge-amber">Belum</span>'}</td>
+        </tr>`;
+      }).join('')}
+    </table>`;
+}
+
+function renderLog(){
+  document.getElementById('log-body').innerHTML=logList.length===0
+    ? '<div class="empty">Belum ada log aktiviti</div>'
+    : logList.slice(0,30).map(l=>`
+      <div class="log-item">
+        <div class="log-icon" style="background:${l.bg}">${l.icon}</div>
+        <div><div class="log-title">${l.aktiviti}</div><div class="log-meta">${l.guru} · ${l.masa}</div></div>
+      </div>`).join('');
+}
+
+function addLog(aktiviti,icon='📝',bg='var(--teal-50)'){
+  logList.unshift({aktiviti,icon,bg,guru:'Guru',masa:now()});
+  localStorage.setItem('logList',JSON.stringify(logList.slice(0,100)));
+}
+
+// === MURID CRUD ===
+async function tambahMurid(){
+  const nama=document.getElementById('f-nama').value.trim();
+  if(!nama){showToast('⚠️ Sila masukkan nama murid');return;}
+  const ms=parseInt(document.getElementById('f-ms').value)||0;
+  const m={
+    id: Date.now(),
+    nama,
+    jantina: document.getElementById('f-jantina').value,
+    status: document.getElementById('f-status').value,
+    ms: ms||0,
+    daftar: document.getElementById('f-tarikh').value||new Date().toISOString().slice(0,10)
+  };
+  muridList.push(m);
+  localStorage.setItem('muridCache',JSON.stringify(muridList));
+  addLog(`Tambah murid: ${nama}`,'👤','var(--green-50)');
+  await postData({action:'tambah',...m});
+  renderAll();
+  closeModal('modal-tambah');
+  document.getElementById('f-nama').value='';
+  document.getElementById('f-ms').value='';
+  showToast('✅ Murid berjaya ditambah!');
+}
+
+function editMurid(id){
+  const m=muridList.find(x=>x.id==id);if(!m)return;
+  document.getElementById('e-id').value=id;
+  document.getElementById('e-nama').value=m.nama;
+  document.getElementById('e-jantina').value=m.jantina;
+  document.getElementById('e-status').value=m.status;
+  document.getElementById('e-ms').value=typeof m.ms==='number'?m.ms:'';
+  openModal('modal-edit');
+}
+
+async function simpanEdit(){
+  const id=document.getElementById('e-id').value;
+  const m=muridList.find(x=>x.id==id);if(!m)return;
+  m.nama=document.getElementById('e-nama').value;
+  m.jantina=document.getElementById('e-jantina').value;
+  m.status=document.getElementById('e-status').value;
+  m.ms=parseInt(document.getElementById('e-ms').value)||0;
+  localStorage.setItem('muridCache',JSON.stringify(muridList));
+  addLog(`Kemaskini: ${m.nama}`,'✏️','var(--teal-50)');
+  await postData({action:'kemaskini',...m});
+  renderAll();
+  closeModal('modal-edit');
+  showToast('✅ Maklumat berjaya dikemaskini!');
+}
+
+async function padamMurid(id){
+  const m=muridList.find(x=>x.id==id);if(!m)return;
+  if(!confirm(`Tukar status ${m.nama.split(' ')[0]} kepada "Berpindah"?\n\nRekod lama akan disimpan.`))return;
+  m.status='Berpindah';
+  localStorage.setItem('muridCache',JSON.stringify(muridList));
+  addLog(`Status tukar: ${m.nama} → Berpindah`,'🔄','var(--amber-50)');
+  await postData({action:'kemaskini',...m});
+  renderAll();
+  showToast('🔄 Status murid ditukar kepada Berpindah');
+}
+
+function filterMurid(q){
+  const f=muridList.filter(m=>m.nama.toLowerCase().includes(q.toLowerCase()));
+  renderMuridTable(f);
+}
+
+function filterStatus(s){
+  renderMuridTable(s?muridList.filter(m=>m.status===s):muridList);
+}
+
+// === REKOD ===
+function openRekodModal(id,nama,minggu){
+  document.getElementById('rekod-modal-title').textContent=`📝 ${nama.split(' ')[0]} · ${minggu}`;
+  document.getElementById('r-murid-id').value=id;
+  document.getElementById('r-minggu').value=minggu;
+  document.getElementById('r-tarikh').value=new Date().toISOString().slice(0,10);
+  document.getElementById('r-jenis').value='ms';
+  document.getElementById('r-ms').value='';
+  document.getElementById('r-catatan').value='';
+  toggleRekodJenis('ms');
+  openModal('modal-rekod');
+}
+
+function toggleRekodJenis(v){
+  document.getElementById('r-ms-wrap').style.display=v==='ms'?'block':'none';
+}
+
+async function simpanRekod(){
+  const id=document.getElementById('r-murid-id').value;
+  const minggu=document.getElementById('r-minggu').value;
+  const jenis=document.getElementById('r-jenis').value;
+  const ms=parseInt(document.getElementById('r-ms').value)||0;
+  const catatan=document.getElementById('r-catatan').value;
+  const tarikh=document.getElementById('r-tarikh').value;
+
+  if(jenis==='ms'&&(!ms||ms<1||ms>604)){showToast('⚠️ Sila masukkan muka surat 1–604');return;}
+
+  const rec={muridId:id,minggu,jenis,ms:jenis==='ms'?ms:'',catatan,tarikh};
+  const existing=rekodList.findIndex(r=>r.muridId==id&&r.minggu===minggu);
+  if(existing>=0) rekodList[existing]=rec; else rekodList.push(rec);
+  localStorage.setItem('rekodList',JSON.stringify(rekodList));
+
+  if(jenis==='ms'&&ms>=1){
+    const m=muridList.find(x=>x.id==id);
+    if(m&&ms>=(parseInt(m.ms)||0)){
+      m.ms=ms;
+      localStorage.setItem('muridCache',JSON.stringify(muridList));
+      await postData({action:'kemaskini',...m});
+    }
+  }
+
+  addLog(`Rekod ${minggu} — ${jenis==='ms'?'ms '+ms:jenis==='cp'?'Cuti Period':'Tidak Hadir'}`,'📖','var(--teal-50)');
+  await postData({action:'rekod',...rec});
+  renderAll();
+  closeModal('modal-rekod');
+  showToast(ms>=604?'🏆 TAHNIAH! Murid telah KHATAM Al-Quran!':'✅ Rekod berjaya disimpan!');
+}
+
+// === UI ===
+function showPage(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  if(el)el.classList.add('active');
+}
+
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+function cetakMurid(){
+  window.print();
+  addLog('Cetak senarai murid','🖨️','var(--blue-50)');
+}
+
+function cetakLaporan(jenis){
+  addLog(`Cetak laporan ${jenis}`,'🖨️','var(--blue-50)');
+  window.print();
+}
+
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');}));
+
+document.getElementById('f-tarikh').value=new Date().toISOString().slice(0,10);
+loadData();
+setInterval(loadData,60000);
+</script>
+</body>
+</html>
