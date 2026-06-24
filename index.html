@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rekod Khatam Al-Quran 2026 (STABLE)</title>
+<title>Khatam Al-Quran 2026 (FIXED STABLE)</title>
 
 <style>
 body{font-family:Arial;background:#f6faf8;margin:0}
-nav{background:#0F6E56;color:#fff;padding:12px;display:flex;gap:10px}
-nav button{background:transparent;border:0;color:#fff;cursor:pointer;font-weight:bold}
+nav{background:#0F6E56;color:#fff;padding:12px;display:flex;gap:10px;position:sticky;top:0}
+nav button{background:none;border:0;color:#fff;cursor:pointer;font-weight:bold}
 nav button.active{border-bottom:2px solid #fff}
 
 .page{display:none;padding:16px}
@@ -19,37 +19,37 @@ nav button.active{border-bottom:2px solid #fff}
 table{width:100%;border-collapse:collapse;background:#fff}
 th,td{padding:8px;border-bottom:1px solid #eee;font-size:13px}
 
-input,select{padding:6px;margin:4px 0;width:100%}
-button{padding:6px 10px;cursor:pointer}
-.btn{background:#0F6E56;color:#fff;border:0;border-radius:6px}
+.btn{padding:6px 10px;background:#0F6E56;color:#fff;border:0;border-radius:6px;cursor:pointer}
 .btn-red{background:#c0392b;color:#fff;border:0;border-radius:6px}
-.small{font-size:12px;color:#555}
+
+input{padding:6px;width:100%;margin:4px 0}
 </style>
 </head>
 
 <body>
 
 <nav>
-  <button onclick="show('dash')" class="active">Dashboard</button>
-  <button onclick="show('murid')">Murid</button>
+  <button class="active" onclick="show('dash',this)">Dashboard</button>
+  <button onclick="show('murid',this)">Murid</button>
+  <button onclick="show('rekod',this)">Rekod</button>
+  <button onclick="show('laporan',this)">Laporan</button>
 </nav>
 
 <!-- DASHBOARD -->
 <div id="dash" class="page active">
   <div class="card">
-    <h3>📊 Dashboard Stabil</h3>
-    <p id="stat"></p>
+    <h3>📊 Dashboard</h3>
+    <p id="stat">Loading...</p>
   </div>
 </div>
 
 <!-- MURID -->
 <div id="murid" class="page">
-
   <div class="card">
     <h3>Tambah Murid</h3>
-    <input id="nama" placeholder="Nama murid">
+    <input id="nama" placeholder="Nama">
     <input id="ms" type="number" placeholder="Muka surat">
-    <button class="btn" onclick="add()">+ Tambah</button>
+    <button class="btn" onclick="add()">Tambah</button>
   </div>
 
   <div class="card">
@@ -65,22 +65,58 @@ button{padding:6px 10px;cursor:pointer}
       <tbody id="tbl"></tbody>
     </table>
   </div>
+</div>
 
+<!-- REKOD -->
+<div id="rekod" class="page">
+  <div class="card">
+    <h3>📝 Rekod</h3>
+    <p>Sistem stabil (offline-safe)</p>
+  </div>
+</div>
+
+<!-- LAPORAN -->
+<div id="laporan" class="page">
+  <div class="card">
+    <h3>📈 Laporan</h3>
+    <p id="report"></p>
+  </div>
 </div>
 
 <script>
-let murid = JSON.parse(localStorage.getItem("murid")) || [
-  {id:1,nama:"Ahmad Aryan",ms:120},
-  {id:2,nama:"Aina Insyirah",ms:450},
-  {id:3,nama:"Ikram",ms:300}
-];
 
+const API = "https://script.google.com/macros/s/AKfycbwgjSOm6pEjRVQ4KBZW-CjBej239XN9UmG1WHtYL17Db63UOog8GWS_wFKoY89ye3Sz5A/exec";
+
+// ================= SAFE STORAGE =================
+let murid = [];
+
+function loadLocal(){
+  try{
+    murid = JSON.parse(localStorage.getItem("murid")) || [];
+  }catch(e){
+    murid = [];
+  }
+
+  // seed data kalau kosong
+  if(murid.length===0){
+    murid = [
+      {id:1,nama:"Ahmad Aryan",ms:120},
+      {id:2,nama:"Aina Insyirah",ms:450},
+      {id:3,nama:"Ikram",ms:300}
+    ];
+  }
+}
+
+// ================= SAVE =================
 function save(){
   localStorage.setItem("murid", JSON.stringify(murid));
 }
 
+// ================= RENDER =================
 function render(){
-  document.getElementById("tbl").innerHTML =
+  try{
+
+    document.getElementById("tbl").innerHTML =
     murid.map(m=>`
       <tr>
         <td>${m.nama}</td>
@@ -93,51 +129,73 @@ function render(){
       </tr>
     `).join("");
 
-  let total = murid.length;
-  let khatam = murid.filter(m=>m.ms>=604).length;
+    let total = murid.length;
+    let khatam = murid.filter(m=>m.ms>=604).length;
 
-  document.getElementById("stat").innerText =
-    `Jumlah murid: ${total} | Khatam: ${khatam}`;
+    document.getElementById("stat").innerText =
+      `Jumlah: ${total} | Khatam: ${khatam}`;
+
+    document.getElementById("report").innerText =
+      `Progress: ${(khatam/total*100||0).toFixed(1)}%`;
+
+  }catch(e){
+    console.log("Render error:",e);
+  }
 }
 
+// ================= CRUD =================
 function add(){
-  let nama = document.getElementById("nama").value;
+  let nama = document.getElementById("nama").value.trim();
   let ms = parseInt(document.getElementById("ms").value)||0;
 
-  if(!nama) return alert("Isi nama");
+  if(!nama) return alert("Nama kosong");
 
-  murid.push({id:Date.now(),nama,ms});
-  save(); render();
+  murid.push({
+    id:Date.now(),
+    nama,
+    ms
+  });
 
-  document.getElementById("nama").value="";
-  document.getElementById("ms").value="";
+  save();
+  render();
 }
 
 function edit(id){
   let m = murid.find(x=>x.id===id);
-  let newMs = prompt("Update MS:", m.ms);
-  if(newMs!==null){
-    m.ms=parseInt(newMs)||0;
-    save();render();
+  if(!m) return;
+
+  let val = prompt("Update MS:", m.ms);
+  if(val!==null){
+    m.ms = parseInt(val)||0;
+    save();
+    render();
   }
 }
 
 function del(id){
-  if(confirm("Padam murid?")){
-    murid = murid.filter(x=>x.id!==id);
-    save();render();
-  }
+  if(!confirm("Padam murid?")) return;
+  murid = murid.filter(x=>x.id!==id);
+  save();
+  render();
 }
 
-function show(id){
+// ================= NAV =================
+function show(id,el){
   document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
   document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
 
   document.getElementById(id).classList.add("active");
-  event.target.classList.add("active");
+  el.classList.add("active");
 }
 
-render();
+// ================= INIT SAFE =================
+function init(){
+  loadLocal();
+  render();
+}
+
+init();
+
 </script>
 
 </body>
