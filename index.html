@@ -407,8 +407,12 @@ tr.berpindah td{opacity:.6}
       </div>
     </div>
     <div class="modal-ft" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
-      <button class="btn sm" style="background:var(--amber50);color:var(--amber);
-        border-color:#f0d080" onclick="bukaPindah(eId)">🔄 Pindah</button>
+      <div style="display:flex;gap:6px">
+        <button class="btn sm" style="background:var(--amber50);color:var(--amber);
+          border-color:#f0d080" onclick="bukaPindah(eId)">🔄 Pindah</button>
+        <button class="btn sm" style="background:var(--red50);color:var(--red);
+          border-color:#f5bcbc" onclick="bukaHapusMurid(eId)">🗑️ Hapus Murid</button>
+      </div>
       <div style="display:flex;gap:8px">
         <button class="btn" onclick="cMod('m-edit')">Batal</button>
         <button class="btn prim" onclick="sEdit()">✓ Kemaskini</button>
@@ -445,7 +449,15 @@ tr.berpindah td{opacity:.6}
         </select>
       </div>
     </div>
-    <div class="modal-ft"><button class="btn" onclick="cMod('m-rekod')">Tutup</button><button class="btn prim" onclick="sRek()">💾 Simpan Rekod</button></div>
+    <div class="modal-ft" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <button class="btn sm" id="btn-hapus-rekod" style="background:var(--red50);
+        color:var(--red);border-color:#f5bcbc;display:none"
+        onclick="bukaHapusRekod()">🗑️ Hapus Rekod</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn" onclick="cMod('m-rekod')">Tutup</button>
+        <button class="btn prim" onclick="sRek()">💾 Simpan</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -851,7 +863,19 @@ function oRek(el){
   document.getElementById("r-d").value=tdy();document.getElementById("r-j").value="ms";
   document.getElementById("r-ms").value="";document.getElementById("r-cat").value="";tJenis("ms");
   var ex=grec(mid,b);
-  if(ex){document.getElementById("r-j").value=ex.jenis;if(ex.ms)document.getElementById("r-ms").value=ex.ms;if(ex.cat)document.getElementById("r-cat").value=ex.cat;if(ex.tarikh)document.getElementById("r-d").value=ex.tarikh;tJenis(ex.jenis);}
+  var hapusBtn=document.getElementById("btn-hapus-rekod");
+  if(ex){
+    document.getElementById("r-j").value=ex.jenis;
+    if(ex.ms)document.getElementById("r-ms").value=ex.ms;
+    if(ex.cat)document.getElementById("r-cat").value=ex.cat;
+    if(ex.tarikh)document.getElementById("r-d").value=ex.tarikh;
+    tJenis(ex.jenis);
+    /* Ada rekod — tunjuk butang hapus */
+    if(hapusBtn)hapusBtn.style.display="block";
+  } else {
+    /* Tiada rekod — sembunyi butang hapus */
+    if(hapusBtn)hapusBtn.style.display="none";
+  }
   oMod("m-rekod");
 }
 function tJenis(v){document.getElementById("r-ms-w").style.display=v==="ms"?"block":"none";}
@@ -884,6 +908,21 @@ function bukaPindah(id){
   setTimeout(function(){document.getElementById("pwd-input").focus();},350);
 }
 
+/* Hapus mana-mana murid (tanpa perlu Berpindah dulu) */
+function bukaHapusMurid(id){
+  var m=MURID.find(function(x){return x.id==id;});if(!m)return;
+  pendingId=id;pendingAksi="hapus";
+  document.getElementById("pwd-title").textContent="🗑️ Hapus Murid";
+  document.getElementById("pwd-msg").textContent=
+    'AMARAN: Rekod "'+m.nama+'" akan DIPADAM KEKAL termasuk semua rekod bacaan. Masukkan kata laluan.';
+  document.getElementById("pwd-input").value="";
+  document.getElementById("pwd-error").style.display="none";
+  document.getElementById("pwd-action").textContent="🗑️ Hapus Kekal";
+  document.getElementById("pwd-action").style.background="var(--red)";
+  oMod("m-pwd");
+  setTimeout(function(){document.getElementById("pwd-input").focus();},350);
+}
+
 function bukaHapus(id){
   var m=MURID.find(function(x){return x.id==id;});if(!m)return;
   pendingId=id;pendingAksi="hapus";
@@ -908,6 +947,7 @@ function confirmPwd(){
   document.getElementById("pwd-error").style.display="none";
   if(pendingAksi==="pindah")doTandaPindah();
   else if(pendingAksi==="hapus")doHapus();
+  else if(pendingAksi==="hapusrekod")doHapusRekod();
 }
 
 function doTandaPindah(){
@@ -941,6 +981,45 @@ function doHapus(){
     .then(function(){setTimeout(LD,1500);}).catch(function(e){console.warn('POST gagal:',e);});
   cMod("m-pwd");cMod("m-edit");
   rAll();toast("🗑️ "+nama.split(" ")[0]+" dipadam dari sistem");
+}
+
+/* ════ HAPUS REKOD ════ */
+function bukaHapusRekod(){
+  var mid=document.getElementById("r-mid").value;
+  var b=document.getElementById("r-b").value;
+  var m=MURID.find(function(x){return String(x.id)===String(mid);});
+  var namaS=m?m.nama.split(" ")[0]:"murid";
+  pendingId=mid+"__"+b;
+  pendingAksi="hapusrekod";
+  document.getElementById("pwd-title").textContent="🗑️ Hapus Rekod Bacaan";
+  document.getElementById("pwd-msg").textContent=
+    'Masukkan kata laluan untuk memadam rekod bulan '+b+' bagi '+namaS+".";
+  document.getElementById("pwd-input").value="";
+  document.getElementById("pwd-error").style.display="none";
+  document.getElementById("pwd-action").textContent="🗑️ Hapus Rekod";
+  document.getElementById("pwd-action").style.background="var(--red)";
+  oMod("m-pwd");
+  setTimeout(function(){document.getElementById("pwd-input").focus();},350);
+}
+
+function doHapusRekod(){
+  var parts=String(pendingId).split("__");
+  var mid=parts[0];
+  var b=parts[1];
+  /* Buang dari array RL */
+  RL=RL.filter(function(r){
+    return !(String(r.mid)===String(mid)&&r.b===b);
+  });
+  localStorage.setItem("rl",JSON.stringify(RL));
+  addLog("Hapus rekod "+b+": "+mid,"🗑️","var(--red50)");
+  /* POST ke Sheets untuk hapus */
+  fetch(API,{method:"POST",body:JSON.stringify({
+    action:"hapusrekod",muridId:mid,bulan:b
+  })}).catch(function(e){console.warn("POST gagal:",e);});
+  cMod("m-pwd");
+  cMod("m-rekod");
+  rAll();
+  toast("✅ Rekod "+b+" berjaya dipadam");
 }
 
 function oMod(id){document.getElementById(id).classList.add("on");}
