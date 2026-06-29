@@ -227,14 +227,12 @@ tr:hover td{background:#f8fdfb}
 
 @media print{nav,.btn,.btn-row{display:none!important}.page{display:block!important;padding:0}}
 
-/* Password modal */
-#pwd-input{font-size:18px;letter-spacing:3px}
-/* Hapus button */
-.btn-hapus{background:var(--red50);color:var(--red);border-color:#f5bcbc}
-/* Sync pill clickable */
-.sync-pill:hover{opacity:.85}
-/* Berpindah badge dim */
-
+/* ════ New elements ════ */
+#pwd-input{letter-spacing:2px;font-size:18px}
+.sync-pill:hover{opacity:.8}
+.sync-pill{transition:opacity .15s}
+/* Berpindah row dim */
+tr.berpindah td{opacity:.6}
 </style>
 </head>
 <body>
@@ -254,7 +252,7 @@ tr:hover td{background:#f8fdfb}
   </div>
   <div class="nav-right">
     <div class="kp-btn" onclick="oMod('m-kelas')">📚 <span id="kp-lbl">Semua</span></div>
-    <div class="sync-pill" id="si" title="Klik untuk sync manual" onclick="LD()" style="cursor:pointer">✓ Sync <span id="sync-pill-time" style="opacity:.7;font-size:10px"></span></div>
+    <div class="sync-pill" id="si" onclick="LD()" title="Klik untuk sync semula" style="cursor:pointer">✓ Sync</div>
   </div>
 </div>
 </nav>
@@ -408,8 +406,9 @@ tr:hover td{background:#f8fdfb}
         <div class="fg"><label class="fl">Muka Surat</label><input class="fi" id="ems" type="number" min="0" max="604"></div>
       </div>
     </div>
-    <div class="modal-ft" style="justify-content:space-between">
-      <button class="btn" style="background:var(--amber50);color:var(--amber);border-color:#f0d080;font-size:12px" onclick="bukaPindah(eId)">🔄 Tandakan Pindah</button>
+    <div class="modal-ft" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <button class="btn sm" style="background:var(--amber50);color:var(--amber);
+        border-color:#f0d080" onclick="bukaPindah(eId)">🔄 Pindah</button>
       <div style="display:flex;gap:8px">
         <button class="btn" onclick="cMod('m-edit')">Batal</button>
         <button class="btn prim" onclick="sEdit()">✓ Kemaskini</button>
@@ -450,30 +449,32 @@ tr:hover td{background:#f8fdfb}
   </div>
 </div>
 
-<!-- MODAL: PASSWORD PENGESAHAN -->
+<!-- ════ MODAL: PASSWORD ════ -->
 <div class="ov" id="m-pwd">
   <div class="modal">
     <div class="modal-hd">
-      <div class="modal-t" id="pwd-title">🔐 Pengesahan Diperlukan</div>
-      <button class="modal-x" onclick="cMod('m-pwd');document.getElementById('pwd-error').style.display='none'">×</button>
+      <div class="modal-t" id="pwd-title">🔐 Pengesahan</div>
+      <button class="modal-x" onclick="cMod('m-pwd')">×</button>
     </div>
     <div class="modal-bd">
-      <div style="background:var(--amber50);border:1px solid #f0d080;border-radius:10px;padding:12px 14px;margin-bottom:16px">
-        <div style="font-size:13px;font-weight:600;color:var(--amber);margin-bottom:4px">⚠️ Pengesahan Diperlukan</div>
-        <div style="font-size:12px;color:var(--tx2);line-height:1.5" id="pwd-msg">Masukkan kata laluan untuk meneruskan.</div>
+      <div style="background:var(--amber50);border:1px solid #f0d080;border-radius:10px;
+        padding:12px 14px;margin-bottom:14px">
+        <div style="font-size:12px;font-weight:700;color:var(--amber);margin-bottom:4px">⚠️ Tindakan memerlukan pengesahan</div>
+        <div style="font-size:12px;color:var(--tx2);line-height:1.5" id="pwd-msg"></div>
       </div>
       <div class="fg">
         <label class="fl">Kata Laluan Pentadbir</label>
         <input class="fi" id="pwd-input" type="password" placeholder="Masukkan kata laluan"
-          onkeydown="if(event.key==='Enter')document.getElementById('pwd-action').click()">
+          onkeydown="if(event.key==='Enter')confirmPwd()">
       </div>
-      <div id="pwd-error" style="display:none;background:var(--red50);border:1px solid #f5bcbc;border-radius:8px;padding:10px 12px;margin-top:-6px">
-        <div style="font-size:12px;font-weight:600;color:var(--red)">❌ Kata laluan salah. Cuba lagi.</div>
+      <div id="pwd-error" style="display:none;background:var(--red50);border:1px solid
+        #f5bcbc;border-radius:8px;padding:10px 12px">
+        <div style="font-size:12px;font-weight:700;color:var(--red)">❌ Kata laluan salah. Cuba lagi.</div>
       </div>
     </div>
     <div class="modal-ft">
       <button class="btn" onclick="cMod('m-pwd');document.getElementById('pwd-error').style.display='none'">Batal</button>
-      <button class="btn prim" id="pwd-action">✓ Sahkan</button>
+      <button class="btn prim" id="pwd-action" onclick="confirmPwd()">✓ Sahkan</button>
     </div>
   </div>
 </div>
@@ -490,7 +491,14 @@ let KL=JSON.parse(localStorage.getItem("kl")||JSON.stringify(KDEF));
 let AK="Semua";let RL=[];let LL=[];let nxtId=200;
 
 function ico(j){return j==="L"?"👦🏻":"🧕🏻";}
-function filt(){return AK==="Semua"?MURID:MURID.filter(function(m){return m.kelas===AK;});}
+function filt(){return filtAktif();}
+function filtAktif(){
+  var base=MURID.filter(function(m){return m.status!=="Berpindah";});
+  return AK==="Semua"?base:base.filter(function(m){return m.kelas===AK;});
+}
+function filtMurid(){
+  return AK==="Semua"?MURID:MURID.filter(function(m){return m.kelas===AK;});
+}
 
 function effMs(m){
   if(m.ms==="CP")return "CP";
@@ -524,39 +532,75 @@ function tdy(){return new Date().toISOString().slice(0,10);}
 function tstr(){return new Date().toLocaleString("ms-MY",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});}
 function grec(mid,b){return RL.find(function(r){return r.mid==mid&&r.b===b;})||null;}
 
-/* ═══ SYNC ENGINE ═══ */
+/* ════ SYNC ENGINE ════ */
 async function LD(){
   var si=document.getElementById("si");
   if(si){si.textContent="🔄 Sync...";si.style.background="rgba(255,185,0,.3)";}
   try{
     var res=await fetch(API+"?t="+Date.now());
-    var data=await res.json();
-    /* Load murid dari Sheets */
-    if(data.murid&&data.murid.length>0){
-      /* Merge — keep local extras */
-      var sheetIds=data.murid.map(function(m){return String(m.id);});
-      /* Remove murid yang ada dalam Sheets (akan replace dengan versi Sheets) */
+    if(!res.ok)throw new Error("HTTP "+res.status);
+    var raw=await res.json();
+    /* ── Sokong format lama (array) DAN format baru ({murid,rekod}) ── */
+    var muridArr=[];
+    var rekodArr=[];
+    if(Array.isArray(raw)){
+      /* Format lama — Apps Script lama */
+      muridArr=raw;
+    } else if(raw.murid){
+      /* Format baru */
+      muridArr=raw.murid;
+      rekodArr=raw.rekod||[];
+    }
+    /* ── Update murid dari Sheets ── */
+    if(muridArr.length>0){
+      var sheetIds=muridArr.map(function(x){return String(x.id||x.Id||"");}).filter(Boolean);
       for(var i=MURID.length-1;i>=0;i--){
         if(sheetIds.indexOf(String(MURID[i].id))>=0)MURID.splice(i,1);
       }
-      /* Add dari Sheets */
-      data.murid.forEach(function(m){
-        MURID.push({id:m.id,nama:m.nama||"",kelas:m.kelas||"",jantina:m.jantina||"L",ms:m.ms||0,status:m.status||"Aktif",daftar:m.daftar||""});
+      muridArr.forEach(function(m){
+        if(!m.id&&!m.nama)return;
+        MURID.push({
+          id:m.id||m.Id,
+          nama:m.nama||m.Nama||"",
+          kelas:m.kelas||m.Kelas||"",
+          jantina:m.jantina||m.Jantina||"L",
+          ms:m.ms||m.Ms||0,
+          status:m.status||m.Status||"Aktif",
+          daftar:m.daftar||m.Daftar||""
+        });
       });
-      localStorage.setItem("mc",JSON.stringify(MURID));
     }
-    /* Load rekod dari Sheets */
-    if(data.rekod&&data.rekod.length>0){
-      RL=data.rekod.map(function(r){return{mid:r.muridId||r.mid,b:r.bulan||r.b,jenis:r.jenis,ms:r.ms,cat:r.catatan||r.cat,tarikh:r.tarikh};});
+    /* ── Merge balik murid tempatan (mextra) ── */
+    var ex=JSON.parse(localStorage.getItem("mextra")||"[]");
+    ex.forEach(function(m){
+      if(!MURID.find(function(x){return String(x.id)===String(m.id);}))MURID.push(m);
+    });
+    /* ── Update rekod dari Sheets ── */
+    if(rekodArr.length>0){
+      RL=rekodArr.map(function(r){
+        return{
+          mid:r.muridId||r.mid||r.MuridId,
+          b:r.bulan||r.b||r.Bulan,
+          jenis:r.jenis||r.Jenis,
+          ms:r.ms||r.Ms,
+          cat:r.catatan||r.cat||r.Catatan,
+          tarikh:r.tarikh||r.Tarikh
+        };
+      });
       localStorage.setItem("rl",JSON.stringify(RL));
     }
-    if(si){si.textContent="✓ Tersync";si.style.background="rgba(100,220,150,.3)";}
-    document.getElementById("sync-pill-time").textContent=new Date().toLocaleTimeString("ms-MY",{hour:"2-digit",minute:"2-digit"});
+    localStorage.setItem("mc",JSON.stringify(MURID));
+    if(si){si.textContent="✓ Sync";si.style.background="rgba(100,220,150,.3)";}
   }catch(e){
-    /* Offline — guna localStorage */
-    RL=JSON.parse(localStorage.getItem("rl")||"[]");
-    if(si){si.textContent="📶 Offline";si.style.background="rgba(255,100,100,.3)";}
-    console.log("Sync error:",e);
+    /* Cuba load dari localStorage cache */
+    var cached=JSON.parse(localStorage.getItem("mc")||"null");
+    if(cached&&cached.length>0){
+      cached.forEach(function(m){
+        if(!MURID.find(function(x){return String(x.id)===String(m.id);}))MURID.push(m);
+      });
+    }
+    if(si){si.textContent="📶 Cache";si.style.background="rgba(255,150,50,.3)";}
+    console.warn("Sync gagal:",e.message);
   }
   rAll();
 }
@@ -564,8 +608,9 @@ async function LD(){
 function init(){
   RL=JSON.parse(localStorage.getItem("rl")||"[]");
   LL=JSON.parse(localStorage.getItem("ll")||"[]");
+  /* Load mextra (murid tambah secara lokal) */
   var ex=JSON.parse(localStorage.getItem("mextra")||"[]");
-  ex.forEach(function(m){if(!MURID.find(function(x){return x.id==m.id;}))MURID.push(m);});
+  ex.forEach(function(m){if(!MURID.find(function(x){return String(x.id)===String(m.id);}))MURID.push(m);});
   rAll();
   /* Fetch dari Google Sheets */
   LD();
@@ -580,8 +625,9 @@ function saveRec(mid,b,jenis,ms,cat,tarikh){
   var idx=RL.findIndex(function(r){return r.mid==mid&&r.b===b;});
   if(idx>=0)RL[idx]=rec;else RL.push(rec);
   localStorage.setItem("rl",JSON.stringify(RL));
-  /* POST rekod ke Google Sheets */
-  fetch(API,{method:"POST",body:JSON.stringify({action:"rekod",muridId:mid,bulan:b,jenis:jenis,ms:ms,catatan:cat,tarikh:tarikh})}).catch(function(){});
+  /* POST ke Sheets */
+  fetch(API,{method:"POST",body:JSON.stringify({action:"rekod",
+    muridId:mid,bulan:b,jenis:jenis,ms:ms,catatan:cat,tarikh:tarikh})}).catch(function(e){console.warn('POST gagal:',e);});
   if(jenis==="ms"&&parseInt(ms)>=1){var m=MURID.find(function(x){return x.id==mid;});if(m&&parseInt(ms)>(parseInt(m.ms)||0))m.ms=parseInt(ms);}
   if(jenis==="cp"){var m=MURID.find(function(x){return x.id==mid;});if(m&&!parseInt(m.ms))m.ms="CP";}
   addLog("Rekod "+b+": "+(jenis==="ms"?"ms "+ms:jenis==="cp"?"Cuti Period":"Tidak Hadir"),"📖","var(--teal50)");
@@ -609,7 +655,7 @@ function rDash(){
       var lb=ems==="CP"?"Cuti Period":n===0?"Tiada Rekod":n+" / 604";
       h+="<div style='display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--bdr)'>";
       h+="<div style='width:32px;height:32px;border-radius:50%;background:"+c.bg+";display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0'>"+ico(m.jantina)+"</div>";
-      h+="<div style='flex:1;min-width:0'><div style='font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap'>"+m.nama.split(" ").slice(0,3).join(" ")+"</div>";
+      h+="<div style='flex:1;min-width:0'><div style='font-size:12px;font-weight:600;word-break:break-word;line-height:1.4'>"+m.nama+"</div>";
       h+="<div class='pbar'><div class='pfill' style='width:"+p+"%;background:"+c.bar+"'></div></div></div>";
       h+="<div style='font-size:11px;font-weight:700;color:"+c.tx+";white-space:nowrap'>"+lb+"</div></div>";
     });
@@ -633,7 +679,7 @@ function rDash(){
 }
 
 function rMurid(){
-  var l=filt();
+  var l=filtMurid();
   /* Desktop table */
   var tb=document.getElementById("tb-m");
   if(tb){
@@ -648,7 +694,10 @@ function rMurid(){
       h+="<td style='font-size:18px'>"+ico(m.jantina)+"</td>";
       h+="<td><div style='font-weight:700;color:"+c.tx+"'>"+msL+"</div>"+(n>0&&ems!=="CP"?"<div class='pbar' style='width:80px'><div class='pfill' style='width:"+p+"%;background:"+c.bar+"'></div></div>":"")+"</td>";
       h+="<td>"+(kt?"<span class='bdg gn'>🏆 KHATAM</span>":ems==="CP"?"<span class='bdg am'>Cuti Period</span>":"<span class='bdg am'>Belum</span>")+"</td>";
-      h+="<td><div style='display:flex;gap:4px'>"+( m.status==='Berpindah'?'<button class=\'btn sm\' style=\'background:var(--red50);color:var(--red);border-color:#f5bcbc\' onclick=\'bukaHapus('+m.id+')\'>🗑️ Hapus</button>':'')+"<button class='btn sm' onclick='editM("+m.id+")'>✏️ Edit</button></div></td></tr>";
+      h+="<td><div style='display:flex;gap:4px'>"+
+      (m.status==="Berpindah"?
+        "<button class='btn sm' style='background:var(--red50);color:var(--red);border-color:#f5bcbc' onclick='bukaHapus("+m.id+")'>🗑️ Hapus</button>":
+        "")+"<button class='btn sm' onclick='editM("+m.id+")'>✏️ Edit</button></div></td></tr>";
     });tb.innerHTML=h;}
   }
   /* Mobile cards */
@@ -660,7 +709,7 @@ function rMurid(){
       var lb=ems==="CP"?"CP":n===0?"-":n+"/604";var kt=n>=604;
       h+="<div class='mcard'><div class='mcard-hd'>";
       h+="<div class='mcard-av' style='background:"+c.bg+"'>"+ico(m.jantina)+"</div>";
-      h+="<div style='flex:1;min-width:0'><div style='font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap'>"+m.nama+"</div><div style='font-size:11px;color:var(--tx2);margin-top:2px'>"+(m.kelas||"")+"</div></div>";
+      h+="<div style='flex:1;min-width:0'><div style='font-size:13px;font-weight:700;word-break:break-word;line-height:1.4'>"+m.nama+"</div><div style='font-size:11px;color:var(--tx2);margin-top:2px'>"+(m.kelas||"")+"</div></div>";
       h+="<button class='btn sm' style='flex-shrink:0' onclick='editM("+m.id+")'>✏️</button></div>";
       h+="<div style='display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:6px'>";
       h+="<span style='font-size:14px;font-weight:800;color:"+c.tx+"'>"+lb+"</span>";
@@ -677,7 +726,7 @@ function rRekod(){
   /* Desktop */
   var tb=document.getElementById("tb-r");
   if(tb){var h="";l.forEach(function(m){
-    h+="<tr><td>"+m.nama.split(" ").slice(0,3).join(" ")+"</td>";
+    h+="<tr><td style='white-space:normal;word-break:break-word;line-height:1.4;font-size:11px'>"+m.nama+"</td>";
     BL.forEach(function(b){
       var rec=grec(m.id,b);var val="-",cls="";
       if(rec){if(rec.jenis==="cp"){val="CP";cls="c-cp";}else if(rec.jenis==="th"){val="TH";cls="c-th";}else{var x=msI(rec.ms);val=x.l;cls=x.c;}}
@@ -694,7 +743,7 @@ function rRekod(){
     var lb=ems==="CP"?"CP":n===0?"Tiada":n+"/604";
     h+="<div class='mcard'><div class='mcard-hd' style='margin-bottom:8px'>";
     h+="<div class='mcard-av' style='background:"+c.bg+"'>"+ico(m.jantina)+"</div>";
-    h+="<div style='flex:1;min-width:0'><div style='font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap'>"+m.nama+"</div><div style='font-size:11px;color:var(--tx2)'>Semasa: <b style='color:"+c.tx+"'>"+lb+"</b></div></div></div>";
+    h+="<div style='flex:1;min-width:0'><div style='font-size:13px;font-weight:700;word-break:break-word;line-height:1.4'>"+m.nama+"</div><div style='font-size:11px;color:var(--tx2)'>Semasa: <b style='color:"+c.tx+"'>"+lb+"</b></div></div></div>";
     h+="<div class='bgrid'>";
     BL.forEach(function(b){
       var rec=grec(m.id,b);var val="-",bcls="";
@@ -766,8 +815,10 @@ function sTambah(){
   MURID.push(m);
   var ex=JSON.parse(localStorage.getItem("mextra")||"[]");ex.push(m);localStorage.setItem("mextra",JSON.stringify(ex));
   addLog("Tambah: "+nama,"👤","var(--green50)");
-  /* Sync ke Google Sheets */
-  fetch(API,{method:"POST",body:JSON.stringify({action:"tambah",id:m.id,nama:m.nama,kelas:m.kelas,jantina:m.jantina,ms:m.ms,status:"Aktif",daftar:m.daftar})}).catch(function(){});
+  /* POST ke Sheets dan resync */
+  fetch(API,{method:"POST",body:JSON.stringify({action:"tambah",id:m.id,nama:m.nama,
+    kelas:m.kelas,jantina:m.jantina,ms:m.ms,status:"Aktif",daftar:m.daftar})})
+    .then(function(){setTimeout(LD,1500);}).catch(function(e){console.warn('POST gagal:',e);});
   cMod("m-tambah");rAll();toast("✅ "+nama.split(" ")[0]+" berjaya ditambah!");
 }
 
@@ -786,8 +837,10 @@ function sEdit(){
   var ex=JSON.parse(localStorage.getItem("mextra")||"[]");var ei=ex.findIndex(function(x){return x.id==eId;});
   if(ei>=0)ex[ei]=m;localStorage.setItem("mextra",JSON.stringify(ex));
   addLog("Kemaskini: "+m.nama,"✏️","var(--teal50)");
-  /* Sync ke Google Sheets */
-  fetch(API,{method:"POST",body:JSON.stringify({action:"kemaskini",id:m.id,nama:m.nama,kelas:m.kelas,jantina:m.jantina,ms:m.ms,status:m.status||"Aktif",daftar:m.daftar||""})}).catch(function(){});
+  /* POST ke Sheets */
+  fetch(API,{method:"POST",body:JSON.stringify({action:"kemaskini",id:m.id,nama:m.nama,
+    kelas:m.kelas,jantina:m.jantina,ms:m.ms,status:m.status||"Aktif",daftar:m.daftar||""})})
+    .then(function(){setTimeout(LD,1500);}).catch(function(e){console.warn('POST gagal:',e);});
   cMod("m-edit");rAll();toast("✅ Dikemaskini!");
 }
 
@@ -813,80 +866,79 @@ function sRek(){
   else toast("✅ Rekod "+b+" disimpan!");
 }
 
-/* ═══ MURID PINDAH / HAPUS ═══ */
-var pendingPindahId=null;
-var pendingHapusId=null;
+/* ════ PINDAH / HAPUS MURID ════ */
+var pendingId=null;
+var pendingAksi=null;
 
 function bukaPindah(id){
   var m=MURID.find(function(x){return x.id==id;});if(!m)return;
-  pendingPindahId=id;
-  document.getElementById("pwd-title").textContent="🔄 Tandakan Murid Pindah";
-  document.getElementById("pwd-msg").textContent="Masukkan kata laluan untuk menandakan "+m.nama.split(" ")[0]+" sebagai Berpindah.";
+  if(m.status==="Berpindah"){toast("⚠️ Murid ini sudah ditandakan Berpindah");return;}
+  pendingId=id;pendingAksi="pindah";
+  document.getElementById("pwd-title").textContent="🔄 Tandakan Berpindah";
+  document.getElementById("pwd-msg").textContent='Masukkan kata laluan untuk tandakan "'+m.nama.split(" ")[0]+'" sebagai Berpindah.';
   document.getElementById("pwd-input").value="";
-  document.getElementById("pwd-action").textContent="✓ Tandakan Pindah";
-  document.getElementById("pwd-action").onclick=function(){confirmPindah();};
-  oMod("m-pwd");
-  setTimeout(function(){document.getElementById("pwd-input").focus();},300);
-}
-
-function confirmPindah(){
-  var pwd=document.getElementById("pwd-input").value;
-  if(pwd!=="1234"){
-    document.getElementById("pwd-error").style.display="block";
-    document.getElementById("pwd-input").value="";
-    return;
-  }
   document.getElementById("pwd-error").style.display="none";
-  var m=MURID.find(function(x){return x.id==pendingPindahId;});
-  if(!m){cMod("m-pwd");return;}
-  m.status="Berpindah";
-  /* Update localStorage */
-  localStorage.setItem("mc",JSON.stringify(MURID));
-  var ex=JSON.parse(localStorage.getItem("mextra")||"[]");
-  var ei=ex.findIndex(function(x){return x.id==m.id;});
-  if(ei>=0)ex[ei]=m;localStorage.setItem("mextra",JSON.stringify(ex));
-  /* Sync ke Sheets */
-  fetch(API,{method:"POST",body:JSON.stringify({action:"kemaskini",id:m.id,nama:m.nama,kelas:m.kelas,jantina:m.jantina,ms:m.ms,status:"Berpindah",daftar:m.daftar||""})}).catch(function(){});
-  addLog("Status Berpindah: "+m.nama,"🔄","var(--amber50)");
-  cMod("m-pwd");cMod("m-edit");
-  rAll();toast("🔄 "+m.nama.split(" ")[0]+" ditandakan Berpindah");
+  document.getElementById("pwd-action").textContent="✓ Pindah";
+  document.getElementById("pwd-action").style.background="var(--amber4)";
+  oMod("m-pwd");
+  setTimeout(function(){document.getElementById("pwd-input").focus();},350);
 }
 
 function bukaHapus(id){
   var m=MURID.find(function(x){return x.id==id;});if(!m)return;
-  pendingHapusId=id;
-  document.getElementById("pwd-title").textContent="🗑️ Hapus Murid Berpindah";
-  document.getElementById("pwd-msg").textContent="Masukkan kata laluan untuk MEMADAM rekod "+m.nama.split(" ")[0]+" secara kekal. Tindakan ini tidak boleh diulang!";
+  pendingId=id;pendingAksi="hapus";
+  document.getElementById("pwd-title").textContent="🗑️ Hapus Murid Kekal";
+  document.getElementById("pwd-msg").textContent='AMARAN: Rekod "'+m.nama+'" akan DIPADAM KEKAL. Masukkan kata laluan.';
   document.getElementById("pwd-input").value="";
+  document.getElementById("pwd-error").style.display="none";
   document.getElementById("pwd-action").textContent="🗑️ Hapus Kekal";
-  document.getElementById("pwd-action").onclick=function(){confirmHapus();};
+  document.getElementById("pwd-action").style.background="var(--red)";
   oMod("m-pwd");
-  setTimeout(function(){document.getElementById("pwd-input").focus();},300);
+  setTimeout(function(){document.getElementById("pwd-input").focus();},350);
 }
 
-function confirmHapus(){
+function confirmPwd(){
   var pwd=document.getElementById("pwd-input").value;
   if(pwd!=="1234"){
     document.getElementById("pwd-error").style.display="block";
     document.getElementById("pwd-input").value="";
+    document.getElementById("pwd-input").focus();
     return;
   }
   document.getElementById("pwd-error").style.display="none";
-  var idx=MURID.findIndex(function(x){return x.id==pendingHapusId;});
+  if(pendingAksi==="pindah")doTandaPindah();
+  else if(pendingAksi==="hapus")doHapus();
+}
+
+function doTandaPindah(){
+  var m=MURID.find(function(x){return x.id==pendingId;});if(!m)return;
+  m.status="Berpindah";
+  localStorage.setItem("mc",JSON.stringify(MURID));
+  var ex=JSON.parse(localStorage.getItem("mextra")||"[]");
+  var ei=ex.findIndex(function(x){return x.id==m.id;});
+  if(ei>=0)ex[ei]=m;localStorage.setItem("mextra",JSON.stringify(ex));
+  addLog("Berpindah: "+m.nama,"🔄","var(--amber50)");
+  fetch(API,{method:"POST",body:JSON.stringify({action:"kemaskini",id:m.id,nama:m.nama,
+    kelas:m.kelas,jantina:m.jantina,ms:m.ms,status:"Berpindah",daftar:m.daftar||""})})
+    .then(function(){setTimeout(LD,1500);}).catch(function(e){console.warn('POST gagal:',e);});
+  cMod("m-pwd");cMod("m-edit");
+  rAll();toast("🔄 "+m.nama.split(" ")[0]+" ditandakan Berpindah");
+}
+
+function doHapus(){
+  var idx=MURID.findIndex(function(x){return x.id==pendingId;});
   if(idx<0){cMod("m-pwd");return;}
   var nama=MURID[idx].nama;
-  /* Remove from MURID array */
   MURID.splice(idx,1);
-  /* Remove rekod */
-  RL=RL.filter(function(r){return r.mid!=pendingHapusId;});
+  RL=RL.filter(function(r){return String(r.mid)!==String(pendingId);});
   localStorage.setItem("rl",JSON.stringify(RL));
   localStorage.setItem("mc",JSON.stringify(MURID));
   var ex=JSON.parse(localStorage.getItem("mextra")||"[]");
-  ex=ex.filter(function(x){return x.id!=pendingHapusId;});
+  ex=ex.filter(function(x){return String(x.id)!==String(pendingId);});
   localStorage.setItem("mextra",JSON.stringify(ex));
-  /* Sync ke Sheets */
-  fetch(API,{method:"POST",body:JSON.stringify({action:"hapus",id:pendingHapusId})}).catch(function(){});
   addLog("Hapus: "+nama,"🗑️","var(--red50)");
+  fetch(API,{method:"POST",body:JSON.stringify({action:"hapus",id:pendingId})})
+    .then(function(){setTimeout(LD,1500);}).catch(function(e){console.warn('POST gagal:',e);});
   cMod("m-pwd");cMod("m-edit");
   rAll();toast("🗑️ "+nama.split(" ")[0]+" dipadam dari sistem");
 }
