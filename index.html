@@ -71,6 +71,8 @@ nav{background:linear-gradient(135deg,var(--teal) 0%,var(--teal2) 100%);position
 .btn.prim:hover{background:var(--teal2)}
 .btn.sm{padding:6px 11px;font-size:12px}
 .btn.gold{background:var(--gold50);color:var(--gold);border-color:#e0c860}
+.btn.danger{background:var(--red50);color:var(--red);border-color:#f1b5b5}
+.btn.warn{background:var(--amber50);color:var(--amber);border-color:#e0c860}
 .btn-row{display:flex;gap:6px;flex-wrap:wrap}
 
 /* ── BADGES (design lama) ── */
@@ -246,7 +248,7 @@ tr:hover td{background:#f8fdfb}
   </div>
   <div class="nav-right">
     <div class="kp-btn" onclick="oMod('m-kelas')">📚 <span id="kp-lbl">Semua</span></div>
-    <div class="sync-pill" id="si">✓ Sync</div>
+    <div class="sync-pill" id="si" onclick="syncNow(true)">⟳ Sync</div>
   </div>
 </div>
 </nav>
@@ -400,7 +402,24 @@ tr:hover td{background:#f8fdfb}
         <div class="fg"><label class="fl">Muka Surat</label><input class="fi" id="ems" type="number" min="0" max="604"></div>
       </div>
     </div>
-    <div class="modal-ft"><button class="btn" onclick="cMod('m-edit')">Batal</button><button class="btn prim" onclick="sEdit()">✓ Kemaskini</button></div>
+    <div class="modal-ft" style="justify-content:space-between;flex-wrap:wrap">
+      <div class="btn-row"><button class="btn warn" onclick="pindahM()">Pindah</button><button class="btn danger" onclick="oHapus()">Hapus</button></div>
+      <div class="btn-row"><button class="btn" onclick="cMod('m-edit')">Batal</button><button class="btn prim" onclick="sEdit()">✓ Kemaskini</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: SAH HAPUS -->
+<div class="ov" id="m-hapus">
+  <div class="modal">
+    <div class="modal-hd"><div class="modal-t">Sahkan Hapus Murid</div><button class="modal-x" onclick="cMod('m-hapus')">×</button></div>
+    <div class="modal-bd">
+      <div style="font-size:13px;line-height:1.5;color:var(--tx2);margin-bottom:12px">
+        Tindakan ini akan hapus murid daripada senarai aktif. Masukkan password untuk pengesahan.
+      </div>
+      <div class="fg"><label class="fl">Password</label><input class="fi" id="hpw" type="password" inputmode="numeric" placeholder="Password"></div>
+    </div>
+    <div class="modal-ft"><button class="btn" onclick="cMod('m-hapus')">Batal</button><button class="btn danger" onclick="sHapus()">Hapus</button></div>
   </div>
 </div>
 
@@ -439,16 +458,83 @@ tr:hover td{background:#f8fdfb}
 <div class="toast" id="toast"></div>
 
 <script>
-const MURID=[{id:1,nama:"MUSYRIF ZAYYAN BIN AHMAD ZAMZAHURI",kelas:"Tahun 3A/3B",jantina:"L",ms:89},{id:2,nama:"MUHAMMAD AQIL ASRAF BIN ABDULLAH",kelas:"Tahun 4A/4C",jantina:"L",ms:0},{id:3,nama:"WAN MUHAMMAD AISH HAYYAN BIN WAN MOHD HAFIIZI",kelas:"Tahun 4A/4C",jantina:"L",ms:0},{id:4,nama:"AMNI AMANINA BINTI MOHAMAD NOR AZIZI",kelas:"Tahun 4B/4D",jantina:"P",ms:414},{id:5,nama:"MUHAMAD HAMZAH BIN MOHD SHAFI RAFI",kelas:"Tahun 4B/4D",jantina:"L",ms:350},{id:6,nama:"MUHAMMAD ASYRAAF BIN CHE SUHAFAL",kelas:"Tahun 4B/4D",jantina:"L",ms:52},{id:7,nama:"NURUL HUDA AQILA BINTI ROSLI",kelas:"Tahun 4B/4D",jantina:"P",ms:182},{id:8,nama:"AMNI NAURA AYSHIENA BINTI AMMAR",kelas:"Tahun 5A/5B",jantina:"P",ms:0},{id:9,nama:"IRFAN HAMAD BIN SAJAD MUSTAKIM",kelas:"Tahun 5A/5B",jantina:"L",ms:0},{id:10,nama:"KHAYLA NAURAH BINTI KHAIRUL IZWAN",kelas:"Tahun 5A/5B",jantina:"P",ms:0},{id:11,nama:"MEHARUNNISA AISY SAFA BINTI JUSRI",kelas:"Tahun 5A/5B",jantina:"P",ms:0},{id:12,nama:"NAYLI IRDINA BINTI THAUFAN",kelas:"Tahun 5A/5B",jantina:"P",ms:0},{id:13,nama:"NUR AMANI SOFEA BINTI SUHAIMI",kelas:"Tahun 5A/5B",jantina:"P",ms:0},{id:14,nama:"NURUL AZRA INSYIRAH BINTI AMYSYAH ZUME",kelas:"Tahun 5A/5B",jantina:"P",ms:0},{id:15,nama:"WAN NUR KEISYA AMANDA BINTI WAN MOHD HAFIIZI",kelas:"Tahun 5A/5B",jantina:"P",ms:0},{id:16,nama:"CAHAYA QASEH BINTI MOHD RASHID",kelas:"Tahun 5C/5D",jantina:"P",ms:0},{id:17,nama:"DAYANA SYAKIRAH BINTI SALIHAN",kelas:"Tahun 5C/5D",jantina:"P",ms:0},{id:18,nama:"MARIAH NURINSYIRAH BINTI SYAHARUDDIN",kelas:"Tahun 5C/5D",jantina:"P",ms:0},{id:19,nama:"NUR NAYLA ADZKIA AKMA BINTI MOHD AKMAL",kelas:"Tahun 5C/5D",jantina:"P",ms:0},{id:20,nama:"AHMAD ARYAN ARSYAD BIN AHMAD HILMI NAZMI",kelas:"Tahun 6B/6C",jantina:"L",ms:89},{id:21,nama:"ARIS ANEESA AWLIYA BINTI MOHD ZAKI",kelas:"Tahun 6B/6C",jantina:"P",ms:"CP"},{id:22,nama:"FISKA IZZ ZARA BINTI ARDI FIRHAN SHAH",kelas:"Tahun 6B/6C",jantina:"P",ms:549},{id:23,nama:"MALAIQA ZENDRALISA BINTI AHMAD ZAMZAHURI",kelas:"Tahun 6B/6C",jantina:"P",ms:190},{id:24,nama:"MOHAMAD AAKIF AMSYAR BIN MOHAMAD ALIFI ALIF",kelas:"Tahun 6B/6C",jantina:"L",ms:594},{id:25,nama:"MOHAMAD AMMAR RIZQI BIN MOHAMAD KHAIDIR",kelas:"Tahun 6B/6C",jantina:"L",ms:291},{id:26,nama:"MUHAMAD IKRAM HAZIMI BIN SAKIMIN",kelas:"Tahun 6B/6C",jantina:"L",ms:354},{id:27,nama:"MUHAMMAD HADIF IFFAT BIN MOHAMAD GHAZALI",kelas:"Tahun 6B/6C",jantina:"L",ms:371},{id:28,nama:"MUHAMMAD MISHARY RASHID BIN ABDULLAH KUTTY",kelas:"Tahun 6B/6C",jantina:"L",ms:588},{id:29,nama:"NUR AINA INSYIRAH BINTI AZHARUDIN",kelas:"Tahun 6B/6C",jantina:"P",ms:468},{id:30,nama:"NUR ARIFFIZIE DANIA BINTI MUHAMMAD FIRDAUS",kelas:"Tahun 6B/6C",jantina:"P",ms:447},{id:31,nama:"NUR DHYFYNA ELLYSYA BINTI MOHD SHAHRULNIZA",kelas:"Tahun 6B/6C",jantina:"P",ms:5},{id:32,nama:"NUR HASYA KHAYLA BINTI AHMAD SHAH",kelas:"Tahun 6B/6C",jantina:"P",ms:0},{id:33,nama:"NURUL SYAFIQAH SYAHIRAH BINTI MOHD SANI",kelas:"Tahun 6B/6C",jantina:"P",ms:560},{id:34,nama:"TUAN NIA NURYNA NAURAH BINTI TUAN IZUDDIN",kelas:"Tahun 6B/6C",jantina:"P",ms:323}];
+let MURID=[{id:1,nama:"MUSYRIF ZAYYAN BIN AHMAD ZAMZAHURI",kelas:"Tahun 3A/3B",jantina:"L",ms:89,status:"Aktif"},{id:2,nama:"MUHAMMAD AQIL ASRAF BIN ABDULLAH",kelas:"Tahun 4A/4C",jantina:"L",ms:0,status:"Aktif"},{id:3,nama:"WAN MUHAMMAD AISH HAYYAN BIN WAN MOHD HAFIIZI",kelas:"Tahun 4A/4C",jantina:"L",ms:0,status:"Aktif"},{id:4,nama:"AMNI AMANINA BINTI MOHAMAD NOR AZIZI",kelas:"Tahun 4B/4D",jantina:"P",ms:414,status:"Aktif"},{id:5,nama:"MUHAMAD HAMZAH BIN MOHD SHAFI RAFI",kelas:"Tahun 4B/4D",jantina:"L",ms:350,status:"Aktif"},{id:6,nama:"MUHAMMAD ASYRAAF BIN CHE SUHAFAL",kelas:"Tahun 4B/4D",jantina:"L",ms:52,status:"Aktif"},{id:7,nama:"NURUL HUDA AQILA BINTI ROSLI",kelas:"Tahun 4B/4D",jantina:"P",ms:182,status:"Aktif"},{id:8,nama:"AMNI NAURA AYSHIENA BINTI AMMAR",kelas:"Tahun 5A/5B",jantina:"P",ms:0,status:"Aktif"},{id:9,nama:"IRFAN HAMAD BIN SAJAD MUSTAKIM",kelas:"Tahun 5A/5B",jantina:"L",ms:0,status:"Aktif"},{id:10,nama:"KHAYLA NAURAH BINTI KHAIRUL IZWAN",kelas:"Tahun 5A/5B",jantina:"P",ms:0,status:"Aktif"},{id:11,nama:"MEHARUNNISA AISY SAFA BINTI JUSRI",kelas:"Tahun 5A/5B",jantina:"P",ms:0,status:"Aktif"},{id:12,nama:"NAYLI IRDINA BINTI THAUFAN",kelas:"Tahun 5A/5B",jantina:"P",ms:0,status:"Aktif"},{id:13,nama:"NUR AMANI SOFEA BINTI SUHAIMI",kelas:"Tahun 5A/5B",jantina:"P",ms:0,status:"Aktif"},{id:14,nama:"NURUL AZRA INSYIRAH BINTI AMYSYAH ZUME",kelas:"Tahun 5A/5B",jantina:"P",ms:0,status:"Aktif"},{id:15,nama:"WAN NUR KEISYA AMANDA BINTI WAN MOHD HAFIIZI",kelas:"Tahun 5A/5B",jantina:"P",ms:0,status:"Aktif"},{id:16,nama:"CAHAYA QASEH BINTI MOHD RASHID",kelas:"Tahun 5C/5D",jantina:"P",ms:0,status:"Aktif"},{id:17,nama:"DAYANA SYAKIRAH BINTI SALIHAN",kelas:"Tahun 5C/5D",jantina:"P",ms:0,status:"Aktif"},{id:18,nama:"MARIAH NURINSYIRAH BINTI SYAHARUDDIN",kelas:"Tahun 5C/5D",jantina:"P",ms:0,status:"Aktif"},{id:19,nama:"NUR NAYLA ADZKIA AKMA BINTI MOHD AKMAL",kelas:"Tahun 5C/5D",jantina:"P",ms:0,status:"Aktif"},{id:20,nama:"AHMAD ARYAN ARSYAD BIN AHMAD HILMI NAZMI",kelas:"Tahun 6B/6C",jantina:"L",ms:89,status:"Aktif"},{id:21,nama:"ARIS ANEESA AWLIYA BINTI MOHD ZAKI",kelas:"Tahun 6B/6C",jantina:"P",ms:"CP",status:"Aktif"},{id:22,nama:"FISKA IZZ ZARA BINTI ARDI FIRHAN SHAH",kelas:"Tahun 6B/6C",jantina:"P",ms:549,status:"Aktif"},{id:23,nama:"MALAIQA ZENDRALISA BINTI AHMAD ZAMZAHURI",kelas:"Tahun 6B/6C",jantina:"P",ms:190,status:"Aktif"},{id:24,nama:"MOHAMAD AAKIF AMSYAR BIN MOHAMAD ALIFI ALIF",kelas:"Tahun 6B/6C",jantina:"L",ms:594,status:"Aktif"},{id:25,nama:"MOHAMAD AMMAR RIZQI BIN MOHAMAD KHAIDIR",kelas:"Tahun 6B/6C",jantina:"L",ms:291,status:"Aktif"},{id:26,nama:"MUHAMAD IKRAM HAZIMI BIN SAKIMIN",kelas:"Tahun 6B/6C",jantina:"L",ms:354,status:"Aktif"},{id:27,nama:"MUHAMMAD HADIF IFFAT BIN MOHAMAD GHAZALI",kelas:"Tahun 6B/6C",jantina:"L",ms:371,status:"Aktif"},{id:28,nama:"MUHAMMAD MISHARY RASHID BIN ABDULLAH KUTTY",kelas:"Tahun 6B/6C",jantina:"L",ms:588,status:"Aktif"},{id:29,nama:"NUR AINA INSYIRAH BINTI AZHARUDIN",kelas:"Tahun 6B/6C",jantina:"P",ms:468,status:"Aktif"},{id:30,nama:"NUR ARIFFIZIE DANIA BINTI MUHAMMAD FIRDAUS",kelas:"Tahun 6B/6C",jantina:"P",ms:447,status:"Aktif"},{id:31,nama:"NUR DHYFYNA ELLYSYA BINTI MOHD SHAHRULNIZA",kelas:"Tahun 6B/6C",jantina:"P",ms:5,status:"Aktif"},{id:32,nama:"NUR HASYA KHAYLA BINTI AHMAD SHAH",kelas:"Tahun 6B/6C",jantina:"P",ms:0,status:"Aktif"},{id:33,nama:"NURUL SYAFIQAH SYAHIRAH BINTI MOHD SANI",kelas:"Tahun 6B/6C",jantina:"P",ms:560,status:"Aktif"},{id:34,nama:"TUAN NIA NURYNA NAURAH BINTI TUAN IZUDDIN",kelas:"Tahun 6B/6C",jantina:"P",ms:323,status:"Aktif"}];
 
 const API="https://script.google.com/macros/s/AKfycbwgjSOm6pEjRVQ4KBZW-CjBej239XN9UmG1WHtYL17Db63UOog8GWS_wFKoY89ye3Sz5A/exec";
 const BL=["Jun","Jul","Ogos","Sep","Okt","Nov","Dis"];
 const KDEF=["Tahun 3A/3B","Tahun 4A/4C","Tahun 4B/4D","Tahun 5A/5B","Tahun 5C/5D","Tahun 6B/6C"];
 let KL=JSON.parse(localStorage.getItem("kl")||JSON.stringify(KDEF));
-let AK="Semua";let RL=[];let LL=[];let nxtId=200;
+let AK="Semua";let RL=[];let LL=[];let nxtId=Date.now();let syncing=false;let poller=null;
 
 function ico(j){return j==="L"?"👦🏻":"🧕🏻";}
-function filt(){return AK==="Semua"?MURID:MURID.filter(function(m){return m.kelas===AK;});}
+function isAktif(m){return !m.status||m.status==="Aktif";}
+function baseByName(n){return MURID.find(function(x){return x.nama&&n&&x.nama.toLowerCase()===n.toLowerCase();});}
+function activeMurid(){return MURID.filter(isAktif);}
+function filt(){var a=activeMurid();return AK==="Semua"?a:a.filter(function(m){return m.kelas===AK;});}
+function setSync(txt,bg){var si=document.getElementById("si");if(si){si.textContent=txt;si.style.background=bg||"rgba(100,220,150,.3)";}}
+function persistAll(){
+  localStorage.setItem("murid_all",JSON.stringify(MURID));
+  localStorage.setItem("kl",JSON.stringify(KL));
+  localStorage.setItem("rl",JSON.stringify(RL));
+  localStorage.setItem("ll",JSON.stringify(LL.slice(0,100)));
+}
+function normalizeMurid(x){
+  var b=baseByName(x.nama)||{};
+  return {
+    id:x.id||Date.now()+Math.floor(Math.random()*1000),
+    nama:x.nama||"",
+    kelas:x.kelas||b.kelas||KL[0],
+    jantina:x.jantina||b.jantina||"L",
+    ms:x.ms==="CP"?"CP":(parseInt(x.ms)||0),
+    status:x.status||"Aktif",
+    daftar:x.daftar||x.tarikhDaftar||""
+  };
+}
+function applyRemote(list){
+  if(list&&typeof list==="object"&&!Array.isArray(list)){
+    if(Array.isArray(list.records))RL=list.records;
+    if(Array.isArray(list.kelas))KL=Array.from(new Set(KDEF.concat(list.kelas)));
+    list=list.murid||list.students||list.data;
+  }
+  if(!Array.isArray(list))return false;
+  var now=Date.now();
+  var dirty=MURID.filter(function(m){return m._dirtyUntil&&m._dirtyUntil>now;});
+  var deleted=JSON.parse(localStorage.getItem("deleted_ids")||"[]").map(String);
+  MURID=list.map(normalizeMurid).filter(function(m){return m.nama;});
+  MURID=MURID.filter(function(m){return deleted.indexOf(String(m.id))<0;});
+  dirty.forEach(function(d){
+    var i=MURID.findIndex(function(m){return m.id==d.id;});
+    if(i>=0)MURID[i]=d;else MURID.push(d);
+  });
+  var kelas=MURID.map(function(m){return m.kelas;}).filter(Boolean);
+  KL=Array.from(new Set(KDEF.concat(kelas)));
+  nxtId=Math.max(Date.now(),Math.max.apply(null,MURID.map(function(m){return parseInt(m.id)||0;}).concat([0]))+1);
+  persistAll();rAll();return true;
+}
+function syncNow(manual){
+  if(syncing)return;
+  syncing=true;setSync("⟳ Sync","rgba(255,255,255,.24)");
+  fetch(API+"?t="+Date.now(),{cache:"no-store"})
+    .then(function(r){return r.json();})
+    .then(function(data){if(applyRemote(data)){setSync("✓ Tersync");if(manual)toast("✅ Data terkini dimuat");}})
+    .catch(function(){setSync("⚠ Offline","rgba(226,75,74,.45)");if(manual)toast("⚠️ Tidak dapat sync sekarang");})
+    .finally(function(){syncing=false;});
+}
+function pushRemote(action,item){
+  if(item&&item.id){
+    var m=MURID.find(function(x){return x.id==item.id;});
+    if(m)m._dirtyUntil=Date.now()+30000;
+  }
+  persistAll();setSync("⟳ Sync","rgba(255,255,255,.24)");
+  var body=new URLSearchParams();
+  body.set("action",action);
+  body.set("item",JSON.stringify(item||{}));
+  body.set("murid",JSON.stringify(MURID));
+  body.set("records",JSON.stringify(RL));
+  fetch(API,{method:"POST",mode:"no-cors",body:body})
+    .then(function(){setSync("✓ Tersync");setTimeout(function(){syncNow(false);},1200);})
+    .catch(function(){setSync("⚠ Simpan lokal","rgba(226,75,74,.45)");});
+}
 
 function effMs(m){
   if(m.ms==="CP")return "CP";
@@ -485,10 +571,14 @@ function grec(mid,b){return RL.find(function(r){return r.mid==mid&&r.b===b;})||n
 function init(){
   RL=JSON.parse(localStorage.getItem("rl")||"[]");
   LL=JSON.parse(localStorage.getItem("ll")||"[]");
+  var saved=JSON.parse(localStorage.getItem("murid_all")||"[]");
+  if(saved.length)MURID=saved.map(normalizeMurid);
   var ex=JSON.parse(localStorage.getItem("mextra")||"[]");
-  ex.forEach(function(m){if(!MURID.find(function(x){return x.id==m.id;}))MURID.push(m);});
+  if(!saved.length)ex.forEach(function(m){if(!MURID.find(function(x){return x.id==m.id;}))MURID.push(m);});
   rAll();
-  var si=document.getElementById("si");if(si)si.textContent="✓ Tersync";
+  syncNow(false);
+  if(poller)clearInterval(poller);
+  poller=setInterval(function(){syncNow(false);},15000);
 }
 
 function addLog(a,ic,bg){LL.unshift({a:a,ic:ic||"📝",bg:bg||"var(--teal50)",g:"Guru",t:tstr()});localStorage.setItem("ll",JSON.stringify(LL.slice(0,100)));}
@@ -501,23 +591,23 @@ function saveRec(mid,b,jenis,ms,cat,tarikh){
   if(jenis==="ms"&&parseInt(ms)>=1){var m=MURID.find(function(x){return x.id==mid;});if(m&&parseInt(ms)>(parseInt(m.ms)||0))m.ms=parseInt(ms);}
   if(jenis==="cp"){var m=MURID.find(function(x){return x.id==mid;});if(m&&!parseInt(m.ms))m.ms="CP";}
   addLog("Rekod "+b+": "+(jenis==="ms"?"ms "+ms:jenis==="cp"?"Cuti Period":"Tidak Hadir"),"📖","var(--teal50)");
-  rAll();
+  rAll();pushRemote("saveRecord",rec);
 }
 
 function rAll(){rDash();rMurid();rRekod();rLap();rLog();rKelas();}
 
 function rDash(){
   var l=filt();
-  var kt=l.filter(function(m){return parseInt(m.ms)>=604;}).length;
+  var kt=l.filter(function(m){return parseInt(effMs(m))>=604;}).length;
   var tot=l.length;
-  var ns=l.map(function(m){return parseInt(m.ms)||0;}).filter(function(n){return n>0;});
+  var ns=l.map(function(m){return parseInt(effMs(m))||0;}).filter(function(n){return n>0;});
   var avg=ns.length?Math.round(ns.reduce(function(a,b){return a+b;},0)/ns.length):0;
   var pct=Math.round(avg/604*100);
   ["s0","s1","s2","s3"].forEach(function(id,i){var e=document.getElementById(id);if(e)e.textContent=[tot,kt,tot-kt,pct+"%"][i];});
 
   var dl=document.getElementById("d-list");
   if(dl){
-    var sr=[].concat(l).sort(function(a,b){return(parseInt(b.ms)||0)-(parseInt(a.ms)||0);});
+    var sr=[].concat(l).sort(function(a,b){return(parseInt(effMs(b))||0)-(parseInt(effMs(a))||0);});
     var h="";
     sr.forEach(function(m){
       var ems=effMs(m);var c=clr(ems);var n=parseInt(ems)||0;
@@ -533,16 +623,16 @@ function rDash(){
   }
 
   var r=[0,0,0,0];
-  l.forEach(function(m){var n=parseInt(m.ms)||0;if(n>=604)r[3]++;else if(n>=400)r[2]++;else if(n>=200)r[1]++;else if(n>0)r[0]++;});
+  l.forEach(function(m){var n=parseInt(effMs(m))||0;if(n>=604)r[3]++;else if(n>=400)r[2]++;else if(n>=200)r[1]++;else if(n>0)r[0]++;});
   var cls=["#E24B4A","#EF9F27","#378ADD","#639922"],lbs=["1-199","200-399","400-603","Khatam"];
   var mx=Math.max.apply(null,r.concat([1]));
   var ch=document.getElementById("d-chart");
   if(ch){var ch2="";r.forEach(function(v,i){ch2+="<div class='ccol'><div class='cnum' style='color:"+cls[i]+"'>"+v+"</div><div class='cbar' style='height:"+(Math.round(v/mx*52)+4)+"px;background:"+cls[i]+"'></div><div class='clbl'>"+lbs[i]+"</div></div>";});ch.innerHTML=ch2;}
 
   var nts=[];
-  l.forEach(function(m){var n=parseInt(m.ms)||0;var bk=604-n;
+  l.forEach(function(m){var em=effMs(m);var n=parseInt(em)||0;var bk=604-n;
     if(n>0&&bk<=20&&n<604)nts.push({t:"<b>"+m.nama.split(" ")[0]+"</b> berbaki <b>"+bk+"</b> ms untuk khatam 🎉",d:"var(--amber4)"});
-    if(n===0&&m.ms!=="CP")nts.push({t:"<b>"+m.nama.split(" ")[0]+"</b> belum ada rekod",d:"var(--red4)"});
+    if(n===0&&em!=="CP")nts.push({t:"<b>"+m.nama.split(" ")[0]+"</b> belum ada rekod",d:"var(--red4)"});
   });
   var dn=document.getElementById("d-notif");
   if(dn){var nh="";nts.forEach(function(n){nh+="<div class='nitem'><div class='ndot' style='background:"+n.d+"'></div><div style='font-size:12px;line-height:1.5'>"+n.t+"</div></div>";});dn.innerHTML=nh||"<div class='empty'>Tiada notifikasi</div>";}
@@ -623,8 +713,8 @@ function rRekod(){
 }
 
 function rLap(){
-  var l=filt();var kt=l.filter(function(m){return parseInt(m.ms)>=604;}).length;var tot=l.length;
-  var r=[0,0,0,0];l.forEach(function(m){var n=parseInt(m.ms)||0;if(n>=604)r[3]++;else if(n>=400)r[2]++;else if(n>=200)r[1]++;else if(n>0)r[0]++;});
+  var l=filt();var kt=l.filter(function(m){return parseInt(effMs(m))>=604;}).length;var tot=l.length;
+  var r=[0,0,0,0];l.forEach(function(m){var n=parseInt(effMs(m))||0;if(n>=604)r[3]++;else if(n>=400)r[2]++;else if(n>=200)r[1]++;else if(n>0)r[0]++;});
   var pct=tot?Math.round(kt/tot*100):0;
   var el=document.getElementById("lap-body");if(!el)return;
   var h="<div style='margin-bottom:14px'><div style='font-size:12px;color:var(--tx2);margin-bottom:6px'>Kemajuan Khatam — "+(AK==="Semua"?"Semua Kelas":AK)+"</div>";
@@ -671,18 +761,18 @@ function addKelas(){
   if(!v){toast("Sila masukkan nama kelas");return;}
   if(KL.indexOf(v)>=0){toast("Kelas sudah wujud");return;}
   KL.push(v);localStorage.setItem("kl",JSON.stringify(KL));
-  document.getElementById("inp-kelas").value="";rKelas();toast("✅ Kelas ditambah!");
+  document.getElementById("inp-kelas").value="";rKelas();pushRemote("saveClasses",{kelas:KL});toast("✅ Kelas ditambah!");
 }
 
 function oTambah(){document.getElementById("an").value="";document.getElementById("ams").value="";document.getElementById("at").value=tdy();rKelas();oMod("m-tambah");}
 function sTambah(){
   var nama=document.getElementById("an").value.trim();
   if(!nama){toast("⚠️ Sila masukkan nama");return;}
-  var m={id:++nxtId,nama:nama,kelas:document.getElementById("fk").value,jantina:document.getElementById("aj").value,ms:parseInt(document.getElementById("ams").value)||0};
+  var m={id:++nxtId,nama:nama,kelas:document.getElementById("fk").value,jantina:document.getElementById("aj").value,ms:parseInt(document.getElementById("ams").value)||0,status:"Aktif",daftar:document.getElementById("at").value};
   MURID.push(m);
   var ex=JSON.parse(localStorage.getItem("mextra")||"[]");ex.push(m);localStorage.setItem("mextra",JSON.stringify(ex));
   addLog("Tambah: "+nama,"👤","var(--green50)");
-  cMod("m-tambah");rAll();toast("✅ "+nama.split(" ")[0]+" berjaya ditambah!");
+  cMod("m-tambah");rAll();pushRemote("addStudent",m);toast("✅ "+nama.split(" ")[0]+" berjaya ditambah!");
 }
 
 var eId=null;
@@ -700,7 +790,28 @@ function sEdit(){
   var ex=JSON.parse(localStorage.getItem("mextra")||"[]");var ei=ex.findIndex(function(x){return x.id==eId;});
   if(ei>=0)ex[ei]=m;localStorage.setItem("mextra",JSON.stringify(ex));
   addLog("Kemaskini: "+m.nama,"✏️","var(--teal50)");
-  cMod("m-edit");rAll();toast("✅ Dikemaskini!");
+  cMod("m-edit");rAll();pushRemote("updateStudent",m);toast("✅ Dikemaskini!");
+}
+
+function pindahM(){
+  var m=MURID.find(function(x){return x.id==eId;});if(!m)return;
+  if(!confirm("Tandakan murid ini sebagai pindah? Murid akan disembunyikan daripada senarai aktif."))return;
+  m.status="Pindah";m.pindahPada=tdy();
+  addLog("Pindah: "+m.nama,"📦","var(--amber50)");
+  cMod("m-edit");rAll();pushRemote("moveStudent",m);toast("✅ Murid ditandakan pindah");
+}
+function oHapus(){document.getElementById("hpw").value="";oMod("m-hapus");}
+function sHapus(){
+  if(document.getElementById("hpw").value!=="1234"){toast("⚠️ Password salah");return;}
+  var m=MURID.find(function(x){return x.id==eId;});if(!m)return;
+  MURID=MURID.filter(function(x){return x.id!=eId;});
+  RL=RL.filter(function(r){return r.mid!=eId;});
+  var deleted=JSON.parse(localStorage.getItem("deleted_ids")||"[]");
+  if(deleted.map(String).indexOf(String(eId))<0){deleted.push(eId);localStorage.setItem("deleted_ids",JSON.stringify(deleted));}
+  var ex=JSON.parse(localStorage.getItem("mextra")||"[]").filter(function(x){return x.id!=eId;});
+  localStorage.setItem("mextra",JSON.stringify(ex));
+  addLog("Hapus: "+m.nama,"🗑️","var(--red50)");
+  cMod("m-hapus");cMod("m-edit");rAll();pushRemote("deleteStudent",{id:eId,nama:m.nama});toast("✅ Murid dihapus");
 }
 
 function oRek(el){
