@@ -233,6 +233,20 @@ tr:hover td{background:#f8fdfb}
 .sync-pill{transition:opacity .15s}
 /* Berpindah row dim */
 tr.berpindah td{opacity:.6}
+
+/* ════ PRINT — cetak senarai murid sahaja ════ */
+#print-area{display:none}
+@media print{
+  body *{visibility:hidden}
+  #print-area,#print-area *{visibility:visible}
+  #print-area{display:block!important;position:absolute;top:0;left:0;width:100%;padding:20px}
+  #print-area table{width:100%;border-collapse:collapse;font-size:12px}
+  #print-area th,#print-area td{border:1px solid #999;padding:6px 10px;text-align:left}
+  #print-area th{background:#eee;font-weight:700}
+  #print-area h2{margin-bottom:4px}
+  #print-area .print-meta{font-size:11px;color:#555;margin-bottom:14px}
+}
+
 </style>
 </head>
 <body>
@@ -301,7 +315,7 @@ tr.berpindah td{opacity:.6}
     <h2 style="font-size:16px;font-weight:800">👥 Senarai Murid</h2>
     <div class="btn-row">
       <button class="btn sm gold" onclick="oMod('m-kelas')">📚 Kelas</button>
-      <button class="btn sm" onclick="window.print()">🖨️ Cetak</button>
+      <button class="btn sm" onclick="cetakSenaraiBacaan()">🖨️ Cetak</button>
       <button class="btn sm prim" onclick="oTambah()">➕ Tambah Murid</button>
     </div>
   </div>
@@ -309,8 +323,8 @@ tr.berpindah td{opacity:.6}
   <div class="card desk-only">
     <div class="tbl-wrap">
       <table>
-        <thead><tr><th>Bil</th><th>Nama Murid</th><th>Kelas</th><th>Jantina</th><th>Muka Surat</th><th>Status</th><th>Tindakan</th></tr></thead>
-        <tbody id="tb-m"><tr><td colspan="7" class="empty"><div class="dspin"></div></td></tr></tbody>
+        <thead><tr><th>Bil</th><th>Nama Murid</th><th>Kelas</th><th>Jantina</th><th>Status</th><th>Tindakan</th></tr></thead>
+        <tbody id="tb-m"><tr><td colspan="6" class="empty"><div class="dspin"></div></td></tr></tbody>
       </table>
     </div>
   </div>
@@ -349,7 +363,7 @@ tr.berpindah td{opacity:.6}
 <div class="page" id="pg-laporan">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
     <h2 style="font-size:16px;font-weight:800">📈 Laporan</h2>
-    <button class="btn sm prim" onclick="window.print()">🖨️ Cetak</button>
+    <button class="btn sm prim" onclick="cetakSenaraiBacaan()">🖨️ Cetak</button>
   </div>
   <div class="card">
     <div class="card-hd"><span class="card-hd-t">📋 Ringkasan Pencapaian</span></div>
@@ -439,15 +453,7 @@ tr.berpindah td{opacity:.6}
         <label class="fl">Muka Surat Semasa (1 – 604)</label>
         <input class="fi" id="r-ms" type="number" min="1" max="604" placeholder="contoh: 350">
       </div>
-      <div class="fg"><label class="fl">Catatan</label>
-        <select class="fs" id="r-cat">
-          <option value="">– Pilih –</option>
-          <option>Bacaan di sekolah</option>
-          <option>Bacaan di rumah</option>
-          <option>Bacaan dengan ibu bapa</option>
-          <option>Catatan lain</option>
-        </select>
-      </div>
+      
     </div>
     <div class="modal-ft" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
       <button class="btn sm" id="btn-hapus-rekod" style="background:var(--red50);
@@ -491,6 +497,7 @@ tr.berpindah td{opacity:.6}
   </div>
 </div>
 
+<div id="print-area"></div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -661,11 +668,30 @@ function saveRec(mid,b,jenis,ms,cat,tarikh){
   var idx=RL.findIndex(function(r){return r.mid==mid&&r.b===b;});
   if(idx>=0)RL[idx]=rec;else RL.push(rec);
   localStorage.setItem("rl",JSON.stringify(RL));
-  /* POST ke Sheets */
+  /* POST rekod ke Sheets */
   fetch(API,{method:"POST",body:JSON.stringify({action:"rekod",
     muridId:mid,bulan:b,jenis:jenis,ms:ms,catatan:cat,tarikh:tarikh})}).catch(function(e){console.warn('POST gagal:',e);});
-  if(jenis==="ms"&&parseInt(ms)>=1){var m=MURID.find(function(x){return x.id==mid;});if(m&&parseInt(ms)>(parseInt(m.ms)||0))m.ms=parseInt(ms);}
-  if(jenis==="cp"){var m=MURID.find(function(x){return x.id==mid;});if(m&&!parseInt(m.ms))m.ms="CP";}
+  /* Update muka surat murid + SYNC ke Sheets Murid juga (PUNCA BUG: tanpa ini, Sheets stale dan revert balik) */
+  var m=MURID.find(function(x){return String(x.id)===String(mid);});
+  var msUpdated=false;
+  if(jenis==="ms"&&parseInt(ms)>=1){
+    if(m&&parseInt(ms)>(parseInt(m.ms)||0)){m.ms=parseInt(ms);msUpdated=true;}
+  }
+  if(jenis==="cp"){
+    if(m&&!parseInt(m.ms)){m.ms="CP";msUpdated=true;}
+  }
+  if(msUpdated&&m){
+    /* Simpan ke mextra supaya tak hilang sebelum Sheets confirm */
+    var ex=JSON.parse(localStorage.getItem("mextra")||"[]");
+    var ei=ex.findIndex(function(x){return String(x.id)===String(m.id);});
+    if(ei>=0)ex[ei]=m;else ex.push(m);
+    localStorage.setItem("mextra",JSON.stringify(ex));
+    localStorage.setItem("mc",JSON.stringify(MURID));
+    /* PENTING: sync muka surat baru ke Sheets Murid tab */
+    fetch(API,{method:"POST",body:JSON.stringify({action:"kemaskini",id:String(m.id),
+      nama:m.nama,kelas:m.kelas,jantina:m.jantina,ms:m.ms,
+      status:m.status||"Aktif",daftar:m.daftar||""})}).catch(function(e){console.warn('POST gagal:',e);});
+  }
   addLog("Rekod "+b+": "+(jenis==="ms"?"ms "+ms:jenis==="cp"?"Cuti Period":"Tidak Hadir"),"📖","var(--teal50)");
   rAll();
 }
@@ -721,42 +747,37 @@ function rMurid(){
     if(a.kelas>b.kelas)return 1;
     return a.nama.localeCompare(b.nama);
   });
-  /* Desktop table */
+  /* Desktop table — tiada lagi Muka Surat, hanya maklumat pengurusan murid */
   var tb=document.getElementById("tb-m");
   if(tb){
-    if(!l.length){tb.innerHTML="<tr><td colspan='7' class='empty'>Tiada murid</td></tr>";}
+    if(!l.length){tb.innerHTML="<tr><td colspan='6' class='empty'>Tiada murid</td></tr>";}
     else{var h="";l.forEach(function(m,i){
-      var ems=effMs(m);var c=clr(ems);var n=parseInt(ems)||0;
-      var msL=ems==="CP"?"<span class='bdg am'>CP</span>":n===0?"-":n;
-      var p=Math.min(100,Math.round(n/604*100));var kt=n>=604;
+      var aktif=m.status!=="Berpindah";
       h+="<tr><td style='color:var(--tx3)'>"+(i+1)+"</td>";
-      h+="<td><div style='display:flex;align-items:center;gap:8px'><div style='width:28px;height:28px;border-radius:50%;background:"+c.bg+";display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0'>"+ico(m.jantina)+"</div><span style='font-size:12px'>"+m.nama+"</span></div></td>";
+      h+="<td><div style='display:flex;align-items:center;gap:8px'><div style='width:28px;height:28px;border-radius:50%;background:var(--teal50);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0'>"+ico(m.jantina)+"</div><span style='font-size:12px'>"+m.nama+"</span></div></td>";
       h+="<td><span class='bdg tl' style='font-size:10px'>"+(m.kelas||"-")+"</span></td>";
       h+="<td style='font-size:18px'>"+ico(m.jantina)+"</td>";
-      h+="<td><div style='font-weight:700;color:"+c.tx+"'>"+msL+"</div>"+(n>0&&ems!=="CP"?"<div class='pbar' style='width:80px'><div class='pfill' style='width:"+p+"%;background:"+c.bar+"'></div></div>":"")+"</td>";
-      h+="<td>"+(kt?"<span class='bdg gn'>🏆 KHATAM</span>":ems==="CP"?"<span class='bdg am'>Cuti Period</span>":"<span class='bdg am'>Belum</span>")+"</td>";
+      h+="<td>"+(aktif?"<span class='bdg gn'>Aktif</span>":"<span class='bdg am'>🔄 Berpindah</span>")+"</td>";
       h+="<td><div style='display:flex;gap:4px'>"+
       (m.status==="Berpindah"?
         "<button class='btn sm' style='background:var(--red50);color:var(--red);border-color:#f5bcbc' onclick='bukaHapus("+m.id+")'>🗑️ Hapus</button>":
         "")+"<button class='btn sm' onclick='editM("+m.id+")'>✏️ Edit</button></div></td></tr>";
     });tb.innerHTML=h;}
   }
-  /* Mobile cards */
+  /* Mobile cards — tiada lagi Muka Surat */
   var mc=document.getElementById("mc-list");
   if(mc){
     if(!l.length){mc.innerHTML="<div class='empty'>Tiada murid</div>";}
     else{var h="";l.forEach(function(m){
-      var ems=effMs(m);var c=clr(ems);var n=parseInt(ems)||0;
-      var lb=ems==="CP"?"CP":n===0?"-":n+"/604";var kt=n>=604;
+      var aktif=m.status!=="Berpindah";
       h+="<div class='mcard'><div class='mcard-hd'>";
-      h+="<div class='mcard-av' style='background:"+c.bg+"'>"+ico(m.jantina)+"</div>";
+      h+="<div class='mcard-av' style='background:var(--teal50)'>"+ico(m.jantina)+"</div>";
       h+="<div style='flex:1;min-width:0'><div style='font-size:13px;font-weight:700;word-break:break-word;line-height:1.4'>"+m.nama+"</div><div style='font-size:11px;color:var(--tx2);margin-top:2px'>"+(m.kelas||"")+"</div></div>";
       h+="<button class='btn sm' style='flex-shrink:0' onclick='editM("+m.id+")'>✏️</button></div>";
-      h+="<div style='display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:6px'>";
-      h+="<span style='font-size:14px;font-weight:800;color:"+c.tx+"'>"+lb+"</span>";
-      h+=(kt?"<span class='bdg gn'>🏆 KHATAM</span>":ems==="CP"?"<span class='bdg am'>Cuti Period</span>":"<span class='bdg am'>Belum Khatam</span>");
+      h+="<div style='display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px'>";
+      h+=(aktif?"<span class='bdg gn'>Aktif</span>":"<span class='bdg am'>🔄 Berpindah</span>");
+      if(m.status==="Berpindah")h+="<button class='btn sm' style='background:var(--red50);color:var(--red);border-color:#f5bcbc' onclick='bukaHapus("+m.id+")'>🗑️ Hapus</button>";
       h+="</div>";
-      if(n>0&&ems!=="CP")h+="<div class='pbar'><div class='pfill' style='width:"+Math.min(100,Math.round(n/604*100))+"%;background:"+c.bar+"'></div></div>";
       h+="</div>";
     });mc.innerHTML=h;}
   }
@@ -899,13 +920,13 @@ function oRek(el){
   document.getElementById("r-title").textContent=nm.split(" ").slice(0,2).join(" ")+" · "+b;
   document.getElementById("r-mid").value=mid;document.getElementById("r-b").value=b;
   document.getElementById("r-d").value=tdy();document.getElementById("r-j").value="ms";
-  document.getElementById("r-ms").value="";document.getElementById("r-cat").value="";tJenis("ms");
+  document.getElementById("r-ms").value="";tJenis("ms");
   var ex=grec(mid,b);
   var hapusBtn=document.getElementById("btn-hapus-rekod");
   if(ex){
     document.getElementById("r-j").value=ex.jenis;
     if(ex.ms)document.getElementById("r-ms").value=ex.ms;
-    if(ex.cat)document.getElementById("r-cat").value=ex.cat;
+    
     if(ex.tarikh)document.getElementById("r-d").value=ex.tarikh;
     tJenis(ex.jenis);
     /* Ada rekod — tunjuk butang hapus */
@@ -920,7 +941,7 @@ function tJenis(v){document.getElementById("r-ms-w").style.display=v==="ms"?"blo
 function sRek(){
   var mid=document.getElementById("r-mid").value;var b=document.getElementById("r-b").value;
   var jenis=document.getElementById("r-j").value;var ms=parseInt(document.getElementById("r-ms").value)||0;
-  var cat=document.getElementById("r-cat").value;var tarikh=document.getElementById("r-d").value;
+  var cat="";var tarikh=document.getElementById("r-d").value;
   if(jenis==="ms"&&(!ms||ms<1||ms>604)){toast("⚠️ Sila masukkan 1-604");return;}
   saveRec(mid,b,jenis,jenis==="ms"?ms:"",cat,tarikh);
   cMod("m-rekod");
@@ -1058,6 +1079,50 @@ function doHapusRekod(){
   cMod("m-rekod");
   rAll();
   toast("✅ Rekod "+b+" berjaya dipadam");
+}
+
+/* ════ CETAK — Senarai Murid + Bacaan Bulan Semasa ════ */
+function bulanSemasa(){
+  var mIdx=new Date().getMonth(); /* 0=Jan...11=Dis */
+  /* Jun=5,Jul=6,Ogos=7,Sep=8,Okt=9,Nov=10,Dis=11 */
+  var map={5:"Jun",6:"Jul",7:"Ogos",8:"Sep",9:"Okt",10:"Nov",11:"Dis"};
+  return map[mIdx]||"Jun";
+}
+
+function cetakSenaraiBacaan(){
+  var l=filtMurid().sort(function(a,b){
+    if(a.kelas<b.kelas)return -1;
+    if(a.kelas>b.kelas)return 1;
+    return a.nama.localeCompare(b.nama);
+  });
+  var bulan=bulanSemasa();
+  var tarikh=new Date().toLocaleDateString("ms-MY",{day:"2-digit",month:"long",year:"numeric"});
+  var kelasLabel=AK==="Semua"?"Semua Kelas":AK;
+
+  var h="<h2>📖 Senarai Bacaan Al-Quran — "+bulan+" 2026</h2>";
+  h+="<div class='print-meta'>SJK(C) Ladang Grisek &middot; JBC1049 &middot; "+kelasLabel+" &middot; Dicetak: "+tarikh+"</div>";
+  h+="<table><thead><tr><th>Bil</th><th>Nama Murid</th><th>Kelas</th><th>Jantina</th><th>Bacaan "+bulan+"</th><th>Status</th></tr></thead><tbody>";
+
+  l.forEach(function(m,i){
+    var rec=grec(m.id,bulan);
+    var bacaan="-";
+    if(rec){
+      if(rec.jenis==="cp")bacaan="Cuti Period";
+      else if(rec.jenis==="th")bacaan="Tidak Hadir";
+      else bacaan="Muka Surat "+(rec.ms||"-");
+    } else if(bulan==="Jun"&&m.ms&&m.ms!==0&&m.ms!=="0"){
+      bacaan=m.ms==="CP"?"Cuti Period":"Muka Surat "+m.ms;
+    }
+    var ems=effMs(m);
+    var n=parseInt(ems)||0;
+    var status=n>=604?"🏆 Khatam":(m.status==="Berpindah"?"Berpindah":"Belum Khatam");
+    h+="<tr><td>"+(i+1)+"</td><td>"+m.nama+"</td><td>"+(m.kelas||"-")+"</td>"+
+       "<td>"+(m.jantina==="L"?"Lelaki":"Perempuan")+"</td><td>"+bacaan+"</td><td>"+status+"</td></tr>";
+  });
+  h+="</tbody></table>";
+
+  document.getElementById("print-area").innerHTML=h;
+  setTimeout(function(){window.print();},150);
 }
 
 function oMod(id){document.getElementById(id).classList.add("on");}
