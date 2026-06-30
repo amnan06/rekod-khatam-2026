@@ -282,7 +282,7 @@ tr.berpindah td{opacity:.6}
   </div>
   <div class="stats">
     <div class="stat"><div class="ico">📖</div><div class="val" id="s0">-</div><div class="lbl">Jumlah Murid</div></div>
-    <div class="stat"><div class="ico">✅</div><div class="val" id="s1" style="color:var(--green)">-</div><div class="lbl">Khatam</div></div>
+    <div class="stat"><div class="ico">🏆</div><div class="val" id="s1" style="color:var(--green)">-</div><div class="lbl">Khatam</div></div>
     <div class="stat"><div class="ico">🟡</div><div class="val" id="s2" style="color:var(--amber4)">-</div><div class="lbl">Belum Khatam</div></div>
     <div class="stat"><div class="ico">📈</div><div class="val" id="s3" style="color:var(--blue)">-</div><div class="lbl">% Kemajuan</div></div>
   </div>
@@ -526,10 +526,21 @@ function filtMurid(){
 }
 
 function effMs(m){
-  if(m.ms==="CP")return "CP";
-  var recs=RL.filter(function(r){return r.mid==m.id;});
-  if(recs.length){var lat=recs[recs.length-1];if(lat.jenis==="cp")return "CP";if(lat.jenis==="ms"&&lat.ms)return parseInt(lat.ms)||m.ms||0;}
-  return m.ms||0;
+  /* Ambil ms TERTINGGI daripada semua rekod RL + m.ms */
+  var hasCp=false;
+  var maxMs=parseInt(m.ms)||0;
+  var recs=RL.filter(function(r){return String(r.mid)===String(m.id);});
+  recs.forEach(function(r){
+    if(r.jenis==="cp")hasCp=true;
+    if(r.jenis==="ms"&&r.ms){
+      var v=parseInt(r.ms)||0;
+      if(v>maxMs)maxMs=v;
+    }
+  });
+  /* Khatam tidak boleh dibuang walaupun ada CP selepasnya */
+  if(maxMs>=604)return 604;
+  if(hasCp&&maxMs===0)return "CP";
+  return maxMs;
 }
 
 function msI(ms){
@@ -537,7 +548,7 @@ function msI(ms){
   if(ms==="TH")return{c:"c-th",l:"TH",bc:"bc-th"};
   var n=parseInt(ms)||0;
   if(n<=0)return{c:"",l:"-",bc:""};
-  if(n>=604)return{c:"c-g",l:"604✓",bc:"bc-g"};
+  if(n>=604)return{c:"c-g",l:"604🏆",bc:"bc-g"};
   if(n>=400)return{c:"c-b",l:""+n,bc:"bc-b"};
   if(n>=200)return{c:"c-o",l:""+n,bc:"bc-o"};
   return{c:"c-r",l:""+n,bc:"bc-r"};
@@ -585,12 +596,17 @@ async function LD(){
       }
       muridArr.forEach(function(m){
         if(!m.id&&!m.nama)return;
+        var sheetMs=parseInt(m.ms||m.Ms)||0;
+        /* Ambil ms tempatan (dari mextra/cache) kalau lebih tinggi */
+        var localM=JSON.parse(localStorage.getItem("mc")||"[]").find(function(x){return String(x.id)===String(m.id||m.Id);});
+        var localMs=localM?parseInt(localM.ms)||0:0;
+        var finalMs=Math.max(sheetMs,localMs);
         MURID.push({
           id:String(m.id||m.Id),
           nama:String(m.nama||m.Nama||"").trim(),
           kelas:String(m.kelas||m.Kelas||"").trim(),
           jantina:String(m.jantina||m.Jantina||"L"),
-          ms:m.ms||m.Ms||0,
+          ms:finalMs,
           status:String(m.status||m.Status||"Aktif"),
           daftar:String(m.daftar||m.Daftar||"")
         });
@@ -700,7 +716,7 @@ function rAll(){rDash();rMurid();rRekod();rLap();rLog();rKelas();}
 
 function rDash(){
   var l=filt();
-  var kt=l.filter(function(m){return parseInt(m.ms)>=604;}).length;
+  var kt=l.filter(function(m){return effMs(m)>=604;}).length;
   var tot=l.length;
   var ns=l.map(function(m){return parseInt(m.ms)||0;}).filter(function(n){return n>0;});
   var avg=ns.length?Math.round(ns.reduce(function(a,b){return a+b;},0)/ns.length):0;
@@ -818,7 +834,7 @@ function rRekod(){
 }
 
 function rLap(){
-  var l=filt();var kt=l.filter(function(m){return parseInt(m.ms)>=604;}).length;var tot=l.length;
+  var l=filt();var kt=l.filter(function(m){return effMs(m)>=604;}).length;var tot=l.length;
   var r=[0,0,0,0];l.forEach(function(m){var n=parseInt(m.ms)||0;if(n>=604)r[3]++;else if(n>=400)r[2]++;else if(n>=200)r[1]++;else if(n>0)r[0]++;});
   var pct=tot?Math.round(kt/tot*100):0;
   var el=document.getElementById("lap-body");if(!el)return;
