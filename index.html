@@ -506,10 +506,16 @@ function ico(j){return j==="L"?"👦🏻":"🧕🏻";}
 function filt(){return filtAktif();}
 function filtAktif(){
   var base=MURID.filter(function(m){return m.status!=="Berpindah";});
-  return AK==="Semua"?base:base.filter(function(m){return m.kelas===AK;});
+  if(AK==="Semua")return base;
+  return base.filter(function(m){
+    return String(m.kelas||"").trim()===String(AK).trim();
+  });
 }
 function filtMurid(){
-  return AK==="Semua"?MURID:MURID.filter(function(m){return m.kelas===AK;});
+  if(AK==="Semua")return MURID;
+  return MURID.filter(function(m){
+    return String(m.kelas||"").trim()===String(AK).trim();
+  });
 }
 
 function effMs(m){
@@ -566,39 +572,51 @@ async function LD(){
     /* ── Update murid dari Sheets ── */
     if(muridArr.length>0){
       var sheetIds=muridArr.map(function(x){return String(x.id||x.Id||"");}).filter(Boolean);
+      /* Buang murid yang ada dalam Sheets (akan diganti) */
       for(var i=MURID.length-1;i>=0;i--){
         if(sheetIds.indexOf(String(MURID[i].id))>=0)MURID.splice(i,1);
       }
       muridArr.forEach(function(m){
         if(!m.id&&!m.nama)return;
         MURID.push({
-          id:m.id||m.Id,
-          nama:m.nama||m.Nama||"",
-          kelas:m.kelas||m.Kelas||"",
-          jantina:m.jantina||m.Jantina||"L",
+          id:String(m.id||m.Id),
+          nama:String(m.nama||m.Nama||"").trim(),
+          kelas:String(m.kelas||m.Kelas||"").trim(),
+          jantina:String(m.jantina||m.Jantina||"L"),
           ms:m.ms||m.Ms||0,
-          status:m.status||m.Status||"Aktif",
-          daftar:m.daftar||m.Daftar||""
+          status:String(m.status||m.Status||"Aktif"),
+          daftar:String(m.daftar||m.Daftar||"")
         });
       });
     }
     /* ── Merge balik murid tempatan (mextra) ── */
     var ex=JSON.parse(localStorage.getItem("mextra")||"[]");
     ex.forEach(function(m){
-      if(!MURID.find(function(x){return String(x.id)===String(m.id);}))MURID.push(m);
+      if(!MURID.find(function(x){return String(x.id)===String(m.id);})){
+      m.id=String(m.id);m.kelas=String(m.kelas||"").trim();
+      MURID.push(m);
+    }
     });
-    /* ── Update rekod dari Sheets ── */
+    /* ── MERGE rekod dari Sheets + rekod lokal ── */
     if(rekodArr.length>0){
-      RL=rekodArr.map(function(r){
+      var sheetsRL=rekodArr.map(function(r){
         return{
-          mid:r.muridId||r.mid||r.MuridId,
-          b:r.bulan||r.b||r.Bulan,
-          jenis:r.jenis||r.Jenis,
-          ms:r.ms||r.Ms,
-          cat:r.catatan||r.cat||r.Catatan,
-          tarikh:r.tarikh||r.Tarikh
+          mid:String(r.muridId||r.mid||r.MuridId||""),
+          b:String(r.bulan||r.b||r.Bulan||""),
+          jenis:r.jenis||r.Jenis||"ms",
+          ms:r.ms||r.Ms||"",
+          cat:r.catatan||r.cat||r.Catatan||"",
+          tarikh:r.tarikh||r.Tarikh||""
         };
       });
+      /* Tambah rekod lokal yang belum ada dalam Sheets */
+      RL.forEach(function(lr){
+        var inSheets=sheetsRL.find(function(sr){
+          return String(sr.mid)===String(lr.mid)&&sr.b===lr.b;
+        });
+        if(!inSheets)sheetsRL.push(lr);
+      });
+      RL=sheetsRL;
       localStorage.setItem("rl",JSON.stringify(RL));
     }
     localStorage.setItem("mc",JSON.stringify(MURID));
@@ -608,7 +626,10 @@ async function LD(){
     var cached=JSON.parse(localStorage.getItem("mc")||"null");
     if(cached&&cached.length>0){
       cached.forEach(function(m){
-        if(!MURID.find(function(x){return String(x.id)===String(m.id);}))MURID.push(m);
+        if(!MURID.find(function(x){return String(x.id)===String(m.id);})){
+      m.id=String(m.id);m.kelas=String(m.kelas||"").trim();
+      MURID.push(m);
+    }
       });
     }
     if(si){si.textContent="📶 Cache";si.style.background="rgba(255,150,50,.3)";}
@@ -622,7 +643,10 @@ function init(){
   LL=JSON.parse(localStorage.getItem("ll")||"[]");
   /* Load mextra (murid tambah secara lokal) */
   var ex=JSON.parse(localStorage.getItem("mextra")||"[]");
-  ex.forEach(function(m){if(!MURID.find(function(x){return String(x.id)===String(m.id);}))MURID.push(m);});
+  ex.forEach(function(m){if(!MURID.find(function(x){return String(x.id)===String(m.id);})){
+      m.id=String(m.id);m.kelas=String(m.kelas||"").trim();
+      MURID.push(m);
+    }});
   rAll();
   /* Fetch dari Google Sheets */
   LD();
@@ -691,7 +715,12 @@ function rDash(){
 }
 
 function rMurid(){
-  var l=filtMurid();
+  /* Sort by kelas first, then nama */
+  var l=filtMurid().sort(function(a,b){
+    if(a.kelas<b.kelas)return -1;
+    if(a.kelas>b.kelas)return 1;
+    return a.nama.localeCompare(b.nama);
+  });
   /* Desktop table */
   var tb=document.getElementById("tb-m");
   if(tb){
@@ -823,15 +852,24 @@ function oTambah(){document.getElementById("an").value="";document.getElementByI
 function sTambah(){
   var nama=document.getElementById("an").value.trim();
   if(!nama){toast("⚠️ Sila masukkan nama");return;}
-  var m={id:++nxtId,nama:nama,kelas:document.getElementById("fk").value,jantina:document.getElementById("aj").value,ms:parseInt(document.getElementById("ams").value)||0};
+  var m={id:Date.now(),nama:nama,kelas:document.getElementById("fk").value,jantina:document.getElementById("aj").value,ms:parseInt(document.getElementById("ams").value)||0};
   MURID.push(m);
   var ex=JSON.parse(localStorage.getItem("mextra")||"[]");ex.push(m);localStorage.setItem("mextra",JSON.stringify(ex));
   addLog("Tambah: "+nama,"👤","var(--green50)");
   /* POST ke Sheets dan resync */
+  /* Normalize id & kelas before saving */
+  m.id=String(m.id);
+  m.kelas=String(m.kelas||"").trim();
+  /* Update mextra with normalized values */
+  var ex2=JSON.parse(localStorage.getItem("mextra")||"[]");
+  var ei2=ex2.findIndex(function(x){return String(x.id)===m.id;});
+  if(ei2>=0)ex2[ei2]=m;else ex2.push(m);
+  localStorage.setItem("mextra",JSON.stringify(ex2));
   fetch(API,{method:"POST",body:JSON.stringify({action:"tambah",id:m.id,nama:m.nama,
     kelas:m.kelas,jantina:m.jantina,ms:m.ms,status:"Aktif",daftar:m.daftar})})
-    .then(function(){setTimeout(LD,1500);}).catch(function(e){console.warn('POST gagal:',e);});
-  cMod("m-tambah");rAll();toast("✅ "+nama.split(" ")[0]+" berjaya ditambah!");
+    .then(function(){setTimeout(LD,2000);}).catch(function(e){console.warn('POST gagal:',e);});
+  cMod("m-tambah");rAll();
+  toast("✅ "+nama+" — Kelas: "+m.kelas);
 }
 
 var eId=null;
