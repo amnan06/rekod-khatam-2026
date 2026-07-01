@@ -643,6 +643,8 @@ async function LD(){
       localStorage.setItem("rl",JSON.stringify(RL));
     }
     localStorage.setItem("mc",JSON.stringify(MURID));
+    /* Apply RL ke MURID semula supaya ms tak turun selepas sync */
+    applyRLtoMURID();
     if(si){si.textContent="✓ Sync";si.style.background="rgba(100,220,150,.3)";}
   }catch(e){
     /* Cuba load dari localStorage cache */
@@ -670,11 +672,32 @@ function init(){
       m.id=String(m.id);m.kelas=String(m.kelas||"").trim();
       MURID.push(m);
     }});
+  /* ══ KUNCI FIX: Apply ms tertinggi dari RL ke setiap MURID ══
+     Ini pastikan khatam (604) kekal walaupun m.ms=0 dalam hardcode
+     dan walaupun sebelum LD() sync dari Sheets */
+  applyRLtoMURID();
   rAll();
   /* Fetch dari Google Sheets */
   LD();
   /* Auto-refresh setiap 30 saat */
   setInterval(LD,30000);
+}
+
+/* Apply ms tertinggi dari RL ke MURID.ms — panggil selepas load RL */
+function applyRLtoMURID(){
+  MURID.forEach(function(m){
+    if(m.ms==="CP")return;
+    var maxMs=parseInt(m.ms)||0;
+    RL.forEach(function(r){
+      if(String(r.mid)===String(m.id)&&r.jenis==="ms"&&r.ms){
+        var v=parseInt(r.ms)||0;
+        if(v>maxMs)maxMs=v;
+      }
+    });
+    if(maxMs>0)m.ms=maxMs;
+  });
+  /* Simpan ke localStorage mc supaya LD() ambil nilai yang betul */
+  localStorage.setItem("mc",JSON.stringify(MURID));
 }
 
 function addLog(a,ic,bg){LL.unshift({a:a,ic:ic||"📝",bg:bg||"var(--teal50)",g:"Guru",t:tstr()});localStorage.setItem("ll",JSON.stringify(LL.slice(0,100)));}
@@ -708,6 +731,8 @@ function saveRec(mid,b,jenis,ms,cat,tarikh){
       nama:m.nama,kelas:m.kelas,jantina:m.jantina,ms:m.ms,
       status:m.status||"Aktif",daftar:m.daftar||""})}).catch(function(e){console.warn('POST gagal:',e);});
   }
+  /* Apply RL ke MURID supaya m.ms reflect nilai terbaru */
+  applyRLtoMURID();
   addLog("Rekod "+b+": "+(jenis==="ms"?"ms "+ms:jenis==="cp"?"Cuti Period":"Tidak Hadir"),"📖","var(--teal50)");
   rAll();
 }
@@ -718,7 +743,7 @@ function rDash(){
   var l=filt();
   var kt=l.filter(function(m){return effMs(m)>=604;}).length;
   var tot=l.length;
-  var ns=l.map(function(m){return parseInt(m.ms)||0;}).filter(function(n){return n>0;});
+  var ns=l.map(function(m){var ev=effMs(m);return typeof ev==="number"?ev:0;}).filter(function(n){return n>0;});
   var avg=ns.length?Math.round(ns.reduce(function(a,b){return a+b;},0)/ns.length):0;
   var pct=Math.round(avg/604*100);
   ["s0","s1","s2","s3"].forEach(function(id,i){var e=document.getElementById(id);if(e)e.textContent=[tot,kt,tot-kt,pct+"%"][i];});
@@ -920,7 +945,7 @@ function sEdit(){
   var m=MURID.find(function(x){return x.id==eId;});if(!m)return;
   m.nama=document.getElementById("en").value;m.kelas=document.getElementById("ek").value;
   m.jantina=document.getElementById("ej").value;
-  var v=document.getElementById("ems").value.trim();m.ms=v===""?0:isNaN(parseInt(v))?v:parseInt(v);
+  /* ms tidak diubah melalui Edit — hanya dikemas melalui Rekod Bacaan */
   var ex=JSON.parse(localStorage.getItem("mextra")||"[]");var ei=ex.findIndex(function(x){return x.id==eId;});
   if(ei>=0)ex[ei]=m;localStorage.setItem("mextra",JSON.stringify(ex));
   addLog("Kemaskini: "+m.nama,"✏️","var(--teal50)");
