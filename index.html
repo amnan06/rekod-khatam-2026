@@ -526,18 +526,19 @@ function filtMurid(){
 }
 
 function effMs(m){
-  /* Ambil ms TERTINGGI daripada semua rekod RL + m.ms */
+  /* Ambil ms TERTINGGI daripada semua rekod RL + m.ms + prev_ms */
   var hasCp=false;
   var maxMs=parseInt(m.ms)||0;
   var recs=RL.filter(function(r){return String(r.mid)===String(m.id);});
   recs.forEach(function(r){
-    if(r.jenis==="cp")hasCp=true;
+    if(r.jenis==="cp"||r.jenis==="th"){hasCp=true;}
     if(r.jenis==="ms"&&r.ms){
       var v=parseInt(r.ms)||0;
       if(v>maxMs)maxMs=v;
     }
+    /* BUG 2 FIX: Ambil prev_ms dari rekod CP/TH juga */
+    if(r.prev_ms&&parseInt(r.prev_ms)>maxMs)maxMs=parseInt(r.prev_ms);
   });
-  /* Khatam tidak boleh dibuang walaupun ada CP selepasnya */
   if(maxMs>=604)return 604;
   if(hasCp&&maxMs===0)return "CP";
   return maxMs;
@@ -702,8 +703,8 @@ function applyRLtoMURID(){
 
 function addLog(a,ic,bg){LL.unshift({a:a,ic:ic||"📝",bg:bg||"var(--teal50)",g:"Guru",t:tstr()});localStorage.setItem("ll",JSON.stringify(LL.slice(0,100)));}
 
-function saveRec(mid,b,jenis,ms,cat,tarikh){
-  var rec={mid:mid,b:b,jenis:jenis,ms:ms,cat:cat,tarikh:tarikh};
+function saveRec(mid,b,jenis,ms,cat,tarikh,prev_ms){
+  var rec={mid:mid,b:b,jenis:jenis,ms:ms,cat:cat,tarikh:tarikh,prev_ms:prev_ms||""};
   var idx=RL.findIndex(function(r){return r.mid==mid&&r.b===b;});
   if(idx>=0)RL[idx]=rec;else RL.push(rec);
   localStorage.setItem("rl",JSON.stringify(RL));
@@ -832,8 +833,8 @@ function rRekod(){
     h+="<tr><td style='white-space:normal;word-break:break-word;line-height:1.4;font-size:11px'>"+m.nama+"</td>";
     BL.forEach(function(b){
       var rec=grec(m.id,b);var val="-",cls="";
-      if(rec){if(rec.jenis==="cp"){val="CP";cls="c-cp";}else if(rec.jenis==="th"){val="TH";cls="c-th";}else{var x=msI(rec.ms);val=x.l;cls=x.c;}}
-      else if(b==="Jun"&&m.ms!==0&&m.ms!==""){var x=msI(m.ms);val=x.l;cls=x.c;}
+      if(rec){if(rec.jenis==="cp"){val=rec.prev_ms?"CP("+rec.prev_ms+")":"CP";cls="c-cp";}else if(rec.jenis==="th"){val=rec.prev_ms?"TH("+rec.prev_ms+")":"TH";cls="c-th";}else{var x=msI(rec.ms);val=x.l;cls=x.c;}}
+      
       h+="<td class='"+cls+"' data-mid='"+m.id+"' data-nm='"+m.nama+"' data-b='"+b+"' onclick='oRek(this)'>"+val+"</td>";
     });
     h+="</tr>";
@@ -850,8 +851,8 @@ function rRekod(){
     h+="<div class='bgrid'>";
     BL.forEach(function(b){
       var rec=grec(m.id,b);var val="-",bcls="";
-      if(rec){if(rec.jenis==="cp"){val="CP";bcls="bc-cp";}else if(rec.jenis==="th"){val="TH";bcls="bc-th";}else{var x=msI(rec.ms);val=x.l;bcls=x.bc;}}
-      else if(b==="Jun"&&m.ms!==0&&m.ms!==""){var x=msI(m.ms);val=x.l;bcls=x.bc;}
+      if(rec){if(rec.jenis==="cp"){val=rec.prev_ms?"CP("+rec.prev_ms+")":"CP";bcls="bc-cp";}else if(rec.jenis==="th"){val=rec.prev_ms?"TH("+rec.prev_ms+")":"TH";bcls="bc-th";}else{var x=msI(rec.ms);val=x.l;bcls=x.bc;}}
+      
       h+="<div class='bcell "+bcls+"' data-mid='"+m.id+"' data-nm='"+m.nama+"' data-b='"+b+"' onclick='oRek(this)'><div class='blbl'>"+b+"</div><div class='bval'>"+val+"</div></div>";
     });
     h+="</div></div>";
@@ -984,9 +985,21 @@ function sRek(){
   var jenis=document.getElementById("r-j").value;var ms=parseInt(document.getElementById("r-ms").value)||0;
   var cat="";var tarikh=document.getElementById("r-d").value;
   if(jenis==="ms"&&(!ms||ms<1||ms>604)){toast("⚠️ Sila masukkan 1-604");return;}
-  saveRec(mid,b,jenis,jenis==="ms"?ms:"",cat,tarikh);
+  /* BUG 2 FIX: Bila CP/TH, cari dan simpan ms lama (prev_ms)
+     supaya data bacaan sebelum CP tidak hilang */
+  var prev_ms="";
+  if(jenis==="cp"||jenis==="th"){
+    /* Cari ms tertinggi dari semua rekod murid ini */
+    var allMs=RL.filter(function(r){return String(r.mid)===String(mid)&&r.jenis==="ms"&&r.ms;});
+    if(allMs.length)prev_ms=Math.max.apply(null,allMs.map(function(r){return parseInt(r.ms)||0;}));
+    /* Juga ambil kira m.ms dari MURID */
+    var mObj=MURID.find(function(x){return String(x.id)===String(mid);});
+    if(mObj&&parseInt(mObj.ms)>parseInt(prev_ms||0))prev_ms=parseInt(mObj.ms);
+  }
+  saveRec(mid,b,jenis,jenis==="ms"?ms:"",cat,tarikh,prev_ms);
   cMod("m-rekod");
   if(jenis==="ms"&&ms>=604)toast("🏆 TAHNIAH! KHATAM AL-QURAN!",true);
+  else if(jenis==="cp"&&prev_ms)toast("🟡 Cuti Period disimpan. Ms terakhir: "+prev_ms);
   else toast("✅ Rekod "+b+" disimpan!");
 }
 
@@ -1111,11 +1124,25 @@ function doHapusRekod(){
     return !(String(r.mid)===String(mid)&&r.b===b);
   });
   localStorage.setItem("rl",JSON.stringify(RL));
-  addLog("Hapus rekod "+b+": "+mid,"🗑️","var(--red50)");
-  /* POST ke Sheets untuk hapus */
+  /* KUNCI FIX: Recalculate m.ms dari baki RL selepas hapus */
+  var m=MURID.find(function(x){return String(x.id)===String(mid);});
+  if(m){
+    var baaki=RL.filter(function(r){return String(r.mid)===String(mid)&&r.jenis==="ms"&&r.ms;});
+    var newMs=baaki.length?Math.max.apply(null,baaki.map(function(r){return parseInt(r.ms)||0;})):0;
+    m.ms=newMs;
+    var ex=JSON.parse(localStorage.getItem("mextra")||"[]");
+    var ei=ex.findIndex(function(x){return String(x.id)===String(m.id);});
+    if(ei>=0)ex[ei]=m;localStorage.setItem("mextra",JSON.stringify(ex));
+    localStorage.setItem("mc",JSON.stringify(MURID));
+    fetch(API,{method:"POST",body:JSON.stringify({action:"kemaskini",id:String(m.id),
+      nama:m.nama,kelas:m.kelas,jantina:m.jantina,ms:newMs,
+      status:m.status||"Aktif",daftar:m.daftar||""})}).catch(function(e){console.warn(e);});
+  }
+  addLog("Hapus rekod "+b+": "+(m?m.nama.split(" ")[0]:mid),"🗑️","var(--red50)");
   fetch(API,{method:"POST",body:JSON.stringify({
     action:"hapusrekod",muridId:mid,bulan:b
   })}).catch(function(e){console.warn("POST gagal:",e);});
+  applyRLtoMURID();
   cMod("m-pwd");
   cMod("m-rekod");
   rAll();
