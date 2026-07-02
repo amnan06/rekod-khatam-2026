@@ -683,7 +683,21 @@ function init(){
       m.id=String(m.id);m.kelas=String(m.kelas||"").trim();
       MURID.push(m);
     }});
-  /* ══ KUNCI FIX: Apply ms tertinggi dari RL ke setiap MURID ══
+  /* ══ SEED FIX: Sekali sahaja, tukar data awal (hardcode ms) kepada
+     rekod Jun eksplisit dalam RL. Ini pastikan setiap murid boleh
+     diedit/dihapus secara individu tanpa jejaskan murid lain ══ */
+  if(!localStorage.getItem("rl_seeded_v2")){
+    MURID.forEach(function(m){
+      var n=parseInt(m.ms)||0;
+      var hasJunRec=RL.find(function(r){return String(r.mid)===String(m.id)&&r.b==="Jun";});
+      if(n>0&&!hasJunRec){
+        RL.push({mid:String(m.id),b:"Jun",jenis:"ms",ms:n,cat:"",tarikh:m.daftar||"2026-06-01",prev_ms:""});
+      }
+    });
+    localStorage.setItem("rl",JSON.stringify(RL));
+    localStorage.setItem("rl_seeded_v2","1");
+  }
+  /* ══ Apply ms tertinggi dari RL ke setiap MURID ══
      Ini pastikan khatam (604) kekal walaupun m.ms=0 dalam hardcode
      dan walaupun sebelum LD() sync dari Sheets */
   applyRLtoMURID();
