@@ -598,15 +598,25 @@ async function LD(){
       muridArr.forEach(function(m){
         if(!m.id&&!m.nama)return;
         var sheetMs=parseInt(m.ms||m.Ms)||0;
-        /* Ambil ms tempatan (dari mextra/cache) kalau lebih tinggi */
         var localM=JSON.parse(localStorage.getItem("mc")||"[]").find(function(x){return String(x.id)===String(m.id||m.Id);});
         var localMs=localM?parseInt(localM.ms)||0:0;
         var finalMs=Math.max(sheetMs,localMs);
+        /* FIX: jantina — kalau Sheets kosong/tak sah, guna cache tempatan dahulu
+           (elak "P" tertukar jadi "L" bila Sheets baca salah, cth nama ada tanda petik) */
+        var sheetJantina=String(m.jantina||m.Jantina||"").trim().toUpperCase();
+        var finalJantina;
+        if(sheetJantina==="L"||sheetJantina==="P"){
+          finalJantina=sheetJantina;
+        }else if(localM&&(localM.jantina==="L"||localM.jantina==="P")){
+          finalJantina=localM.jantina;
+        }else{
+          finalJantina="L";
+        }
         MURID.push({
           id:String(m.id||m.Id),
           nama:String(m.nama||m.Nama||"").trim(),
           kelas:String(m.kelas||m.Kelas||"").trim(),
-          jantina:String(m.jantina||m.Jantina||"L"),
+          jantina:finalJantina,
           ms:finalMs,
           status:String(m.status||m.Status||"Aktif"),
           daftar:String(m.daftar||m.Daftar||"")
@@ -915,7 +925,7 @@ function oTambah(){document.getElementById("an").value="";document.getElementByI
 function sTambah(){
   var nama=document.getElementById("an").value.trim();
   if(!nama){toast("⚠️ Sila masukkan nama");return;}
-  var m={id:Date.now(),nama:nama,kelas:document.getElementById("fk").value,jantina:document.getElementById("aj").value,ms:parseInt(document.getElementById("ams").value)||0};
+  var m={id:Date.now(),nama:nama,kelas:document.getElementById("fk").value,jantina:String(document.getElementById("aj").value||"L").trim().toUpperCase(),ms:parseInt(document.getElementById("ams").value)||0};
   MURID.push(m);
   var ex=JSON.parse(localStorage.getItem("mextra")||"[]");ex.push(m);localStorage.setItem("mextra",JSON.stringify(ex));
   addLog("Tambah: "+nama,"👤","var(--green50)");
@@ -928,6 +938,7 @@ function sTambah(){
   var ei2=ex2.findIndex(function(x){return String(x.id)===m.id;});
   if(ei2>=0)ex2[ei2]=m;else ex2.push(m);
   localStorage.setItem("mextra",JSON.stringify(ex2));
+  localStorage.setItem("mc",JSON.stringify(MURID));
   fetch(API,{method:"POST",body:JSON.stringify({action:"tambah",id:m.id,nama:m.nama,
     kelas:m.kelas,jantina:m.jantina,ms:m.ms,status:"Aktif",daftar:m.daftar})})
     .then(function(){setTimeout(LD,2000);}).catch(function(e){console.warn('POST gagal:',e);});
@@ -943,15 +954,20 @@ function editM(id){
   document.getElementById("ems").value=typeof m.ms==="number"?m.ms:"";oMod("m-edit");
 }
 function sEdit(){
-  var m=MURID.find(function(x){return x.id==eId;});if(!m)return;
-  m.nama=document.getElementById("en").value;m.kelas=document.getElementById("ek").value;
-  m.jantina=document.getElementById("ej").value;
+  var m=MURID.find(function(x){return String(x.id)===String(eId);});if(!m)return;
+  m.nama=document.getElementById("en").value;
+  m.kelas=document.getElementById("ek").value;
+  /* FIX: normalize jantina ke L/P uppercase */
+  m.jantina=String(document.getElementById("ej").value||"L").trim().toUpperCase();
   /* ms tidak diubah melalui Edit — hanya dikemas melalui Rekod Bacaan */
-  var ex=JSON.parse(localStorage.getItem("mextra")||"[]");var ei=ex.findIndex(function(x){return x.id==eId;});
-  if(ei>=0)ex[ei]=m;localStorage.setItem("mextra",JSON.stringify(ex));
+  var ex=JSON.parse(localStorage.getItem("mextra")||"[]");
+  var ei=ex.findIndex(function(x){return String(x.id)===String(eId);});
+  if(ei>=0)ex[ei]=m;else ex.push(m);
+  localStorage.setItem("mextra",JSON.stringify(ex));
+  /* FIX: update mc cache juga supaya jantina tak overwrite semasa sync */
+  localStorage.setItem("mc",JSON.stringify(MURID));
   addLog("Kemaskini: "+m.nama,"✏️","var(--teal50)");
-  /* POST ke Sheets */
-  fetch(API,{method:"POST",body:JSON.stringify({action:"kemaskini",id:m.id,nama:m.nama,
+  fetch(API,{method:"POST",body:JSON.stringify({action:"kemaskini",id:String(m.id),nama:m.nama,
     kelas:m.kelas,jantina:m.jantina,ms:m.ms,status:m.status||"Aktif",daftar:m.daftar||""})})
     .then(function(){setTimeout(LD,1500);}).catch(function(e){console.warn('POST gagal:',e);});
   cMod("m-edit");rAll();toast("✅ Dikemaskini!");
