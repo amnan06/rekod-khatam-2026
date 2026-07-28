@@ -534,7 +534,7 @@ async function LD(){
     });
     if(rekodArr.length>0){
       var sheetsRL=rekodArr.map(function(r){
-        return{mid:String(r.muridId||r.mid||r.MuridId||""),b:String(r.bulan||r.b||r.Bulan||""),
+        return{mid:String(r.muridId||r.mid||r.MuridId||""),b:String(r.bulan||r.minggu||r.b||r.Bulan||r.Minggu||""),
           jenis:r.jenis||r.Jenis||"ms",ms:r.ms||r.Ms||"",tarikh:r.tarikh||r.Tarikh||"",prev_ms:r.prev_ms||""};
       });
       RL.forEach(function(lr){
