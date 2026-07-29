@@ -628,7 +628,7 @@ function rMurid(){
       h+="<td><span class='bdg tl' style='font-size:10px'>"+(m.kelas||"-")+"</span></td>";
       h+="<td style='font-size:18px'>"+ico(m.jantina)+"</td>";
       h+="<td>"+(aktif?"<span class='bdg gn'>Aktif</span>":"<span class='bdg am'>🔄 Berpindah</span>")+"</td>";
-      h+="<td><button class='btn sm' data-eid='\"+m.id+\"' onclick='editM(this.getAttribute(\"data-eid\"))'>✏️ Edit</button></td></tr>";
+      h+="<td><button class='btn sm' data-eid='"+m.id+"' onclick='editM(this.getAttribute(\"data-eid\"))'>✏️ Edit</button></td></tr>";
     });tb.innerHTML=h;}
   }
   var mc=document.getElementById("mc-list");
@@ -639,7 +639,7 @@ function rMurid(){
       h+="<div class='mcard'><div class='mcard-hd'>";
       h+="<div class='mcard-av' style='background:var(--tl3)'>"+ico(m.jantina)+"</div>";
       h+="<div style='flex:1;min-width:0'><div style='font-size:13px;font-weight:700;word-break:break-word'>"+m.nama+"</div><div style='font-size:11px;color:var(--tx2);margin-top:2px'>"+(m.kelas||"")+"</div></div>";
-      h+="<button class='btn sm' data-eid='\"+m.id+\"' onclick='editM(this.getAttribute(\"data-eid\"))'>✏️</button></div>";
+      h+="<button class='btn sm' data-eid='"+m.id+"' onclick='editM(this.getAttribute(\"data-eid\"))'>✏️</button></div>";
       h+="<div>"+(aktif?"<span class='bdg gn'>Aktif</span>":"<span class='bdg am'>🔄 Berpindah</span>")+"</div></div>";
     });mc.innerHTML=h;}
   }
@@ -713,7 +713,7 @@ function rKelas(){
   var kp=document.getElementById("kp-lbl");if(kp)kp.textContent=(AK==="Semua"?"Semua":AK.replace("Tahun ",""));
   var el=document.getElementById("kgrid");if(!el)return;
   var all=["Semua"].concat(KL);var h="";
-  all.forEach(function(k){h+="<button class='kelas-item"+(k===AK?" on":"")+"' data-k='\"+k+\"' onclick='pKelas(this.getAttribute(\"data-k\"))'>"+(k==="Semua"?"📚 Semua Kelas":k)+"</button>";});
+  all.forEach(function(k){h+="<button class='kelas-item"+(k===AK?" on":"")+"' data-k='"+k+"' onclick='pKelas(this.getAttribute(\"data-k\"))'>"+(k==="Semua"?"📚 Semua Kelas":k)+"</button>";});
   el.innerHTML=h;
   ["fk","ek"].forEach(function(id){var fe=document.getElementById(id);if(fe){var kh="";KL.forEach(function(k){kh+="<option>"+k+"</option>";});fe.innerHTML=kh;}});
 }
@@ -783,7 +783,7 @@ function renderFilteredMurid(l){
       h+="<td><span class='bdg tl' style='font-size:10px'>"+(m.kelas||"-")+"</span></td>";
       h+="<td style='font-size:18px'>"+ico(m.jantina)+"</td>";
       h+="<td>"+(aktif?"<span class='bdg gn'>Aktif</span>":"<span class='bdg am'>🔄 Berpindah</span>")+"</td>";
-      h+="<td><button class='btn sm' data-eid='\"+m.id+\"' onclick='editM(this.getAttribute(\"data-eid\"))'>✏️ Edit</button></td></tr>";
+      h+="<td><button class='btn sm' data-eid='"+m.id+"' onclick='editM(this.getAttribute(\"data-eid\"))'>✏️ Edit</button></td></tr>";
     });tb.innerHTML=h;}
   }
   var mc=document.getElementById("mc-list");
@@ -794,7 +794,7 @@ function renderFilteredMurid(l){
       h+="<div class='mcard'><div class='mcard-hd'>";
       h+="<div class='mcard-av' style='background:var(--tl3)'>"+ico(m.jantina)+"</div>";
       h+="<div style='flex:1;min-width:0'><div style='font-size:13px;font-weight:700;word-break:break-word'>"+m.nama+"</div><div style='font-size:11px;color:var(--tx2);margin-top:2px'>"+(m.kelas||"")+"</div></div>";
-      h+="<button class='btn sm' data-eid='\"+m.id+\"' onclick='editM(this.getAttribute(\"data-eid\"))'>✏️</button></div>";
+      h+="<button class='btn sm' data-eid='"+m.id+"' onclick='editM(this.getAttribute(\"data-eid\"))'>✏️</button></div>";
       h+="<div>"+(aktif?"<span class='bdg gn'>Aktif</span>":"<span class='bdg am'>🔄 Berpindah</span>")+"</div></div>";
     });mc.innerHTML=h;}
   }
