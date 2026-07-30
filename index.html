@@ -24,6 +24,12 @@
 html,body{width:100%;overflow-x:hidden}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;-webkit-text-size-adjust:100%}
 nav{background:linear-gradient(135deg,var(--tl) 0%,var(--tl2) 100%);position:sticky;top:0;z-index:99;box-shadow:0 2px 16px rgba(0,0,0,.25)}
+#sync-bar{position:fixed;top:0;left:0;height:3px;background:var(--gd);z-index:1000;width:0%;transition:width .3s ease-out;opacity:0}
+#sync-bar.on{opacity:1;width:70%}
+#sync-bar.done{opacity:1;width:100%;transition:width .2s ease-out}
+.dash-loading{position:relative}
+.dash-loading::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.5),transparent);animation:shimmer 1.2s infinite}
+@keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
 .nav-safe{height:env(safe-area-inset-top);min-height:0;background:inherit;display:block}
 .nav-inner{display:flex;align-items:center;padding:0 12px;height:52px;gap:6px}
 .nav-brand{display:flex;align-items:center;gap:9px;flex-shrink:0;margin-right:4px}
@@ -140,6 +146,7 @@ body *{visibility:hidden}
 </style>
 </head>
 <body>
+<div id="sync-bar"></div>
 <nav>
 <div class="nav-safe"></div>
 <div class="nav-inner">
@@ -501,6 +508,8 @@ async function LD(){
   if(syncing)return;
   syncing=true;
   var si=document.getElementById("si");
+  var sb=document.getElementById("sync-bar");
+  if(sb){sb.className="on";}
   if(si){si.textContent="🔄 Sync...";si.style.background="rgba(255,185,0,.3)";}
   try{
     var res=await fetch(API+"?t="+Date.now(),{cache:"no-store"});
@@ -569,6 +578,7 @@ async function LD(){
     if(si){si.textContent="📶 Cache";si.style.background="rgba(255,150,50,.3)";}
   }
   syncing=false;
+  if(sb){sb.className="done";setTimeout(function(){sb.className="";},350);}
   rAll();
 }
 
