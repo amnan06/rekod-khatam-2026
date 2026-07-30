@@ -765,7 +765,8 @@ function sEdit(){
   addLog("Kemaskini: "+m.nama,"✏️","var(--tl3)");
   fetch(API,{method:"POST",body:JSON.stringify({action:"kemaskini",id:String(m.id),nama:m.nama,
     kelas:m.kelas,jantina:m.jantina,ms:m.ms,status:m.status||"Aktif",daftar:m.daftar||""})})
-    .then(function(){LD();}).catch(function(e){console.warn(e);});
+    .then(function(res){if(!res.ok)throw new Error("HTTP "+res.status);LD();})
+    .catch(function(e){console.warn(e);warnSyncFail(m.nama);});
   cMod("m-edit");rAll();toast("✅ Dikemaskini!");
 }
 
@@ -845,8 +846,11 @@ function saveRec(mid,b,jenis,ms,tarikh,prev_ms){
   var idx=RL.findIndex(function(r){return r.mid==mid&&r.b===b;});
   if(idx>=0)RL[idx]=rec;else RL.push(rec);
   localStorage.setItem("rl",JSON.stringify(RL));
+  var _mNama=(function(){var mm=MURID.find(function(x){return String(x.id)===String(mid);});return mm?mm.nama:"Murid";})();
   fetch(API,{method:"POST",body:JSON.stringify({action:"rekod",
-    muridId:mid,bulan:b,jenis:jenis,ms:ms,tarikh:tarikh})}).then(function(){LD();}).catch(function(e){console.warn(e);});
+    muridId:mid,bulan:b,jenis:jenis,ms:ms,tarikh:tarikh})})
+    .then(function(res){if(!res.ok)throw new Error("HTTP "+res.status);LD();})
+    .catch(function(e){console.warn(e);warnSyncFail(_mNama+" (rekod "+b+")");});
   var m=MURID.find(function(x){return String(x.id)===String(mid);});
   var msUpdated=false;
   if(jenis==="ms"&&parseInt(ms)>=1){
@@ -1104,6 +1108,17 @@ function showPg(id,el){
 function toast(msg,kh){
   var t=document.getElementById("toast");t.textContent=msg;t.className="toast on"+(kh?" kh":"");
   setTimeout(function(){t.className="toast";},3500);
+}
+function warnSyncFail(nama){
+  var t=document.getElementById("toast");
+  t.innerHTML="⚠️ GAGAL SYNC ke Google Sheets!<br><span style='font-size:11px;font-weight:400'>"+nama+" — cuma tersimpan di peranti ini. Cuba lagi atau semak internet.</span>";
+  t.className="toast on";
+  t.style.background="var(--rd)";
+  t.style.maxWidth="94vw";
+  t.style.textAlign="left";
+  setTimeout(function(){
+    t.className="toast";t.style.background="";t.style.maxWidth="";t.style.textAlign="center";t.innerHTML="";
+  },6000);
 }
 document.querySelectorAll(".ov").forEach(function(o){o.addEventListener("click",function(e){if(e.target===this)this.classList.remove("on");});});
 document.getElementById("r-d").value=tdy();
