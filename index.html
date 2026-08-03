@@ -208,7 +208,7 @@ body *{visibility:hidden}
 </div>
 <div class="sr">
 <input class="si" placeholder="🔍 Cari nama murid..." oninput="FM(this.value)">
-<select class="fs" style="width:auto;min-width:130px" onchange="FS(this.value)">
+<select class="fs" style="width:auto;min-width:110px;padding:6px 8px;font-size:12px" onchange="FS(this.value)">
 <option value="">Semua Status</option><option>Aktif</option><option>Berpindah</option>
 </select>
 </div>
@@ -541,7 +541,7 @@ async function LD(){
           kelas:String(m.kelas||m.Kelas||"").trim(),
           jantina:finalJantina,
           ms:finalMs,
-          status:String(m.status||m.Status||"Aktif"),
+          status:(localM&&localM.status==="Berpindah")?"Berpindah":String(m.status||m.Status||"Aktif"),
           daftar:String(m.daftar||m.Daftar||"")
         });
       });
@@ -725,7 +725,17 @@ function rKelas(){
   var all=["Semua"].concat(KL);var h="";
   all.forEach(function(k){h+="<button class='kelas-item"+(k===AK?" on":"")+"' data-k='"+k+"' onclick='pKelas(this.getAttribute(\"data-k\"))'>"+(k==="Semua"?"📚 Semua Kelas":k)+"</button>";});
   el.innerHTML=h;
-  ["fk","ek"].forEach(function(id){var fe=document.getElementById(id);if(fe){var kh="";KL.forEach(function(k){kh+="<option>"+k+"</option>";});fe.innerHTML=kh;}});
+  /* FIX: simpan pilihan semasa dropdown SEBELUM rebuild, pulihkan SELEPAS —
+     elak dropdown "Tambah/Edit Murid" reset bila background sync jalan */
+  ["fk","ek"].forEach(function(id){
+    var fe=document.getElementById(id);
+    if(fe){
+      var currentVal=fe.value;
+      var kh="";KL.forEach(function(k){kh+="<option>"+k+"</option>";});
+      fe.innerHTML=kh;
+      if(currentVal&&KL.indexOf(currentVal)>=0)fe.value=currentVal;
+    }
+  });
 }
 
 function pKelas(k){AK=k;cMod("m-kelas");rAll();}
