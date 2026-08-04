@@ -520,8 +520,20 @@ async function LD(){
     else if(raw.murid){muridArr=raw.murid;rekodArr=raw.rekod||[];}
     if(muridArr.length>0){
       var sheetIds=muridArr.map(function(x){return String(x.id||x.Id||"");}).filter(Boolean);
+      /* KUNCI FIX: kira dulu ID murid yang MASIH tergantung tempatan
+         (baru ditambah/pinda, belum sempat disahkan Sheets) supaya
+         tak terpadam secara tak sengaja semasa pruning di bawah */
+      var mextraIds=JSON.parse(localStorage.getItem("mextra")||"[]").map(function(x){return String(x.id);});
       for(var i=MURID.length-1;i>=0;i--){
-        if(sheetIds.indexOf(String(MURID[i].id))>=0)MURID.splice(i,1);
+        var midStr=String(MURID[i].id);
+        if(sheetIds.indexOf(midStr)>=0){
+          MURID.splice(i,1); /* akan diganti versi Sheets terkini di bawah */
+        } else if(mextraIds.indexOf(midStr)<0){
+          /* PRUNE: murid ni TIADA dalam Sheets DAN bukan rekod tempatan
+             yang belum sync — ini bermakna ia dah dipadam di peranti lain.
+             Buang dari cache supaya tak "hidup semula" secara hantu. */
+          MURID.splice(i,1);
+        }
       }
       muridArr.forEach(function(m){
         if(!m.id&&!m.nama)return;
