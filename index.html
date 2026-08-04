@@ -944,16 +944,28 @@ function confirmPwd(){
 }
 
 function doTandaPindah(){
-  var m=MURID.find(function(x){return String(x.id)===String(pendingId);});if(!m)return;
-  m.status="Berpindah";
+  var idx=MURID.findIndex(function(x){return String(x.id)===String(pendingId);});
+  if(idx<0){cMod("m-pwd");return;}
+  var murid=MURID[idx];var nama=murid.nama;
+  murid.status="Berpindah";
+  /* Simpan ke Tong Sampah dengan sebab "Pindah" — terus keluar dari
+     Murid/Dashboard/Rekod, hanya nampak dalam Tong Sampah */
+  var muridRekod=RL.filter(function(r){return String(r.mid)===String(pendingId);});
+  var sampah=JSON.parse(localStorage.getItem("sampah")||"[]");
+  sampah.unshift({murid:murid,rekod:muridRekod,tarikhPadam:new Date().toISOString(),sebab:"Pindah"});
+  localStorage.setItem("sampah",JSON.stringify(sampah.slice(0,50)));
+  MURID.splice(idx,1);
+  RL=RL.filter(function(r){return String(r.mid)!==String(pendingId);});
+  localStorage.setItem("rl",JSON.stringify(RL));
   localStorage.setItem("mc",JSON.stringify(MURID));
   var ex=JSON.parse(localStorage.getItem("mextra")||"[]");
-  var ei=ex.findIndex(function(x){return String(x.id)===String(m.id);});
-  if(ei>=0)ex[ei]=m;else ex.push(m);localStorage.setItem("mextra",JSON.stringify(ex));
-  addLog("Berpindah: "+m.nama,"🔄","var(--am2)");
-  fetch(API,{method:"POST",body:JSON.stringify({action:"kemaskini",id:String(m.id),nama:m.nama,
-    kelas:m.kelas,jantina:m.jantina,ms:m.ms,status:"Berpindah",daftar:m.daftar||""})}).catch(function(){});
-  cMod("m-pwd");cMod("m-edit");rAll();toast("🔄 "+m.nama.split(" ")[0]+" ditandakan Berpindah");
+  ex=ex.filter(function(x){return String(x.id)!==String(pendingId);});
+  localStorage.setItem("mextra",JSON.stringify(ex));
+  addLog("Berpindah (ke Tong Sampah): "+nama,"🔄","var(--am2)");
+  fetch(API,{method:"POST",body:JSON.stringify({action:"hapus",id:pendingId})})
+    .then(function(){LD();}).catch(function(e){console.warn(e);warnSyncFail(nama);});
+  cMod("m-pwd");cMod("m-edit");
+  rAll();renderSampah();toast("🔄 "+nama.split(" ")[0]+" dipindah ke Tong Sampah");
 }
 
 function doHapus(){
@@ -1011,8 +1023,9 @@ function renderSampah(){
   sampah.forEach(function(s,i){
     var tp=new Date(s.tarikhPadam).toLocaleDateString("ms-MY",{day:"2-digit",month:"short",year:"numeric"});
     h+="<div class='mcard'><div style='display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap'>";
-    h+="<div><div style='font-size:13px;font-weight:700'>"+s.murid.nama+"</div>";
-    h+="<div style='font-size:11px;color:var(--tx2);margin-top:2px'>"+(s.murid.kelas||"-")+" &middot; Dipadam: "+tp+"</div></div>";
+    var sebabLbl=s.sebab==="Pindah"?"<span class='bdg am'>🔄 Berpindah</span>":"<span class='bdg rd'>🗑️ Dihapus</span>";
+    h+="<div><div style='display:flex;align-items:center;gap:6px;margin-bottom:3px'><div style='font-size:13px;font-weight:700'>"+s.murid.nama+"</div>"+sebabLbl+"</div>";
+    h+="<div style='font-size:11px;color:var(--tx2)'>"+(s.murid.kelas||"-")+" &middot; "+tp+"</div></div>";
     h+="<div style='display:flex;gap:6px'><button class='btn sm prim' onclick='pulihMurid("+i+")'>♻️ Pulih</button>";
     h+="<button class='btn sm' style='background:var(--rd2);color:var(--rd);border-color:#f5bcbc' onclick='padamKekal("+i+")'>Padam Kekal</button></div>";
     h+="</div></div>";
@@ -1023,6 +1036,7 @@ function renderSampah(){
 function pulihMurid(i){
   var sampah=JSON.parse(localStorage.getItem("sampah")||"[]");
   var item=sampah[i];if(!item)return;
+  item.murid.status="Aktif"; /* Reset status — elak sticky-Berpindah logic terus block murid ni */
   MURID.push(item.murid);
   RL=RL.concat(item.rekod||[]);
   sampah.splice(i,1);
