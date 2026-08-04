@@ -164,7 +164,7 @@ body *{visibility:hidden}
 </div>
 <div class="nav-right">
 <div class="kp-btn" onclick="oMod('m-kelas')">📚 <span id="kp-lbl">Semua</span></div>
-<div class="sync-pill" id="si" onclick="LD()" title="Klik untuk sync serta-merta">✓ Sync</div>
+<div class="sync-pill" id="si" onclick="LD()" ondblclick="showSyncDebug()" title="Klik = sync · Dwi-klik = debug info">✓ Sync</div>
 </div>
 </div>
 </nav>
@@ -388,7 +388,7 @@ let KL=JSON.parse(localStorage.getItem("kl")||JSON.stringify(KDEF));
 let AK="Semua";
 let RL=[];
 let LL=[];
-let MURID=[{id:"1",nama:"MUSYRIF ZAYYAN BIN AHMAD ZAMZAHURI",kelas:"Tahun 3A/3B",jantina:"L",ms:89,status:"Aktif"},{id:"2",nama:"MUHAMMAD AQIL ASRAF BIN ABDULLAH",kelas:"Tahun 4A/4C",jantina:"L",ms:0,status:"Aktif"},{id:"3",nama:"WAN MUHAMMAD AISH HAYYAN BIN WAN MOHD HAFIIZI",kelas:"Tahun 4A/4C",jantina:"L",ms:0,status:"Aktif"},{id:"4",nama:"AMNI AMANINA BINTI MOHAMAD NOR AZIZI",kelas:"Tahun 4B/4D",jantina:"P",ms:414,status:"Aktif"},{id:"5",nama:"MUHAMAD HAMZAH BIN MOHD SHAFI RAFI",kelas:"Tahun 4B/4D",jantina:"L",ms:350,status:"Aktif"},{id:"6",nama:"MUHAMMAD ASYRAAF BIN CHE SUHAFAL",kelas:"Tahun 4B/4D",jantina:"L",ms:52,status:"Aktif"},{id:"7",nama:"NURUL HUDA AQILA BINTI ROSLI",kelas:"Tahun 4B/4D",jantina:"P",ms:182,status:"Aktif"},{id:"8",nama:"AMNI NAURA AYSHIENA BINTI AMMAR",kelas:"Tahun 5A/5B",jantina:"P",ms:0,status:"Aktif"},{id:"9",nama:"IRFAN HAMAD BIN SAJAD MUSTAKIM",kelas:"Tahun 5A/5B",jantina:"L",ms:0,status:"Aktif"},{id:"10",nama:"KHAYLA NAURAH BINTI KHAIRUL IZWAN",kelas:"Tahun 5A/5B",jantina:"P",ms:0,status:"Aktif"},{id:"11",nama:"MEHARUNNISA AISY SAFA BINTI JUSRI",kelas:"Tahun 5A/5B",jantina:"P",ms:0,status:"Aktif"},{id:"12",nama:"NAYLI IRDINA BINTI THAUFAN",kelas:"Tahun 5A/5B",jantina:"P",ms:0,status:"Aktif"},{id:"13",nama:"NUR AMANI SOFEA BINTI SUHAIMI",kelas:"Tahun 5A/5B",jantina:"P",ms:0,status:"Aktif"},{id:"14",nama:"NURUL AZRA INSYIRAH BINTI AMYSYAH ZUME",kelas:"Tahun 5A/5B",jantina:"P",ms:0,status:"Aktif"},{id:"15",nama:"WAN NUR KEISYA AMANDA BINTI WAN MOHD HAFIIZI",kelas:"Tahun 5A/5B",jantina:"P",ms:0,status:"Aktif"},{id:"16",nama:"CAHAYA QASEH BINTI MOHD RASHID",kelas:"Tahun 5C/5D",jantina:"P",ms:0,status:"Aktif"},{id:"17",nama:"DAYANA SYAKIRAH BINTI SALIHAN",kelas:"Tahun 5C/5D",jantina:"P",ms:0,status:"Aktif"},{id:"18",nama:"MARIAH NURINSYIRAH BINTI SYAHARUDDIN",kelas:"Tahun 5C/5D",jantina:"P",ms:0,status:"Aktif"},{id:"19",nama:"NUR NAYLA ADZKIA AKMA BINTI MOHD AKMAL",kelas:"Tahun 5C/5D",jantina:"P",ms:0,status:"Aktif"},{id:"20",nama:"AHMAD ARYAN ARSYAD BIN AHMAD HILMI NAZMI",kelas:"Tahun 6B/6C",jantina:"L",ms:89,status:"Aktif"},{id:"21",nama:"ARIS ANEESA AWLIYA BINTI MOHD ZAKI",kelas:"Tahun 6B/6C",jantina:"P",ms:0,status:"Aktif"},{id:"22",nama:"FISKA IZZ ZARA BINTI ARDI FIRHAN SHAH",kelas:"Tahun 6B/6C",jantina:"P",ms:549,status:"Aktif"},{id:"23",nama:"MALAIQA ZENDRALISA BINTI AHMAD ZAMZAHURI",kelas:"Tahun 6B/6C",jantina:"P",ms:190,status:"Aktif"},{id:"24",nama:"MOHAMAD AAKIF AMSYAR BIN MOHAMAD ALIFI ALIF",kelas:"Tahun 6B/6C",jantina:"L",ms:594,status:"Aktif"},{id:"25",nama:"MOHAMAD AMMAR RIZQI BIN MOHAMAD KHAIDIR",kelas:"Tahun 6B/6C",jantina:"L",ms:291,status:"Aktif"},{id:"26",nama:"MUHAMAD IKRAM HAZIMI BIN SAKIMIN",kelas:"Tahun 6B/6C",jantina:"L",ms:354,status:"Aktif"},{id:"27",nama:"MUHAMMAD HADIF IFFAT BIN MOHAMAD GHAZALI",kelas:"Tahun 6B/6C",jantina:"L",ms:371,status:"Aktif"},{id:"28",nama:"MUHAMMAD MISHARY RASHID BIN ABDULLAH KUTTY",kelas:"Tahun 6B/6C",jantina:"L",ms:588,status:"Aktif"},{id:"29",nama:"NUR AINA INSYIRAH BINTI AZHARUDIN",kelas:"Tahun 6B/6C",jantina:"P",ms:468,status:"Aktif"},{id:"30",nama:"NUR ARIFFIZIE DANIA BINTI MUHAMMAD FIRDAUS",kelas:"Tahun 6B/6C",jantina:"P",ms:447,status:"Aktif"},{id:"31",nama:"NUR DHYFYNA ELLYSYA BINTI MOHD SHAHRULNIZA",kelas:"Tahun 6B/6C",jantina:"P",ms:5,status:"Aktif"},{id:"32",nama:"NUR HASYA KHAYLA BINTI AHMAD SHAH",kelas:"Tahun 6B/6C",jantina:"P",ms:0,status:"Aktif"},{id:"33",nama:"NURUL SYAFIQAH SYAHIRAH BINTI MOHD SANI",kelas:"Tahun 6B/6C",jantina:"P",ms:560,status:"Aktif"},{id:"34",nama:"TUAN NIA NURYNA NAURAH BINTI TUAN IZUDDIN",kelas:"Tahun 6B/6C",jantina:"P",ms:323,status:"Aktif"}];
+let MURID=[{id:"1",nama:"MUSYRIF ZAYYAN BIN AHMAD ZAMZAHURI",kelas:"Tahun 3A/3B",jantina:"L",ms:89,status:"Aktif"},{id:"2",nama:"MUHAMMAD AQIL ASRAF BIN ABDULLAH",kelas:"Tahun 4A/4C",jantina:"L",ms:0,status:"Aktif"},{id:"4",nama:"AMNI AMANINA BINTI MOHAMAD NOR AZIZI",kelas:"Tahun 4B/4D",jantina:"P",ms:414,status:"Aktif"},{id:"5",nama:"MUHAMAD HAMZAH BIN MOHD SHAFI RAFI",kelas:"Tahun 4B/4D",jantina:"L",ms:350,status:"Aktif"},{id:"6",nama:"MUHAMMAD ASYRAAF BIN CHE SUHAFAL",kelas:"Tahun 4B/4D",jantina:"L",ms:52,status:"Aktif"},{id:"7",nama:"NURUL HUDA AQILA BINTI ROSLI",kelas:"Tahun 4B/4D",jantina:"P",ms:182,status:"Aktif"},{id:"8",nama:"AMNI NAURA AYSHIENA BINTI AMMAR",kelas:"Tahun 5A/5B",jantina:"P",ms:0,status:"Aktif"},{id:"9",nama:"IRFAN HAMAD BIN SAJAD MUSTAKIM",kelas:"Tahun 5A/5B",jantina:"L",ms:0,status:"Aktif"},{id:"10",nama:"KHAYLA NAURAH BINTI KHAIRUL IZWAN",kelas:"Tahun 5A/5B",jantina:"P",ms:0,status:"Aktif"},{id:"11",nama:"MEHARUNNISA AISY SAFA BINTI JUSRI",kelas:"Tahun 5A/5B",jantina:"P",ms:0,status:"Aktif"},{id:"12",nama:"NAYLI IRDINA BINTI THAUFAN",kelas:"Tahun 5A/5B",jantina:"P",ms:0,status:"Aktif"},{id:"13",nama:"NUR AMANI SOFEA BINTI SUHAIMI",kelas:"Tahun 5A/5B",jantina:"P",ms:0,status:"Aktif"},{id:"14",nama:"NURUL AZRA INSYIRAH BINTI AMYSYAH ZUME",kelas:"Tahun 5A/5B",jantina:"P",ms:0,status:"Aktif"},{id:"15",nama:"WAN NUR KEISYA AMANDA BINTI WAN MOHD HAFIIZI",kelas:"Tahun 5A/5B",jantina:"P",ms:0,status:"Aktif"},{id:"16",nama:"CAHAYA QASEH BINTI MOHD RASHID",kelas:"Tahun 5C/5D",jantina:"P",ms:0,status:"Aktif"},{id:"17",nama:"DAYANA SYAKIRAH BINTI SALIHAN",kelas:"Tahun 5C/5D",jantina:"P",ms:0,status:"Aktif"},{id:"18",nama:"MARIAH NURINSYIRAH BINTI SYAHARUDDIN",kelas:"Tahun 5C/5D",jantina:"P",ms:0,status:"Aktif"},{id:"19",nama:"NUR NAYLA ADZKIA AKMA BINTI MOHD AKMAL",kelas:"Tahun 5C/5D",jantina:"P",ms:0,status:"Aktif"},{id:"20",nama:"AHMAD ARYAN ARSYAD BIN AHMAD HILMI NAZMI",kelas:"Tahun 6B/6C",jantina:"L",ms:89,status:"Aktif"},{id:"21",nama:"ARIS ANEESA AWLIYA BINTI MOHD ZAKI",kelas:"Tahun 6B/6C",jantina:"P",ms:0,status:"Aktif"},{id:"22",nama:"FISKA IZZ ZARA BINTI ARDI FIRHAN SHAH",kelas:"Tahun 6B/6C",jantina:"P",ms:549,status:"Aktif"},{id:"23",nama:"MALAIQA ZENDRALISA BINTI AHMAD ZAMZAHURI",kelas:"Tahun 6B/6C",jantina:"P",ms:190,status:"Aktif"},{id:"24",nama:"MOHAMAD AAKIF AMSYAR BIN MOHAMAD ALIFI ALIF",kelas:"Tahun 6B/6C",jantina:"L",ms:594,status:"Aktif"},{id:"25",nama:"MOHAMAD AMMAR RIZQI BIN MOHAMAD KHAIDIR",kelas:"Tahun 6B/6C",jantina:"L",ms:291,status:"Aktif"},{id:"26",nama:"MUHAMAD IKRAM HAZIMI BIN SAKIMIN",kelas:"Tahun 6B/6C",jantina:"L",ms:354,status:"Aktif"},{id:"27",nama:"MUHAMMAD HADIF IFFAT BIN MOHAMAD GHAZALI",kelas:"Tahun 6B/6C",jantina:"L",ms:371,status:"Aktif"},{id:"28",nama:"MUHAMMAD MISHARY RASHID BIN ABDULLAH KUTTY",kelas:"Tahun 6B/6C",jantina:"L",ms:588,status:"Aktif"},{id:"29",nama:"NUR AINA INSYIRAH BINTI AZHARUDIN",kelas:"Tahun 6B/6C",jantina:"P",ms:468,status:"Aktif"},{id:"30",nama:"NUR ARIFFIZIE DANIA BINTI MUHAMMAD FIRDAUS",kelas:"Tahun 6B/6C",jantina:"P",ms:447,status:"Aktif"},{id:"31",nama:"NUR DHYFYNA ELLYSYA BINTI MOHD SHAHRULNIZA",kelas:"Tahun 6B/6C",jantina:"P",ms:5,status:"Aktif"},{id:"32",nama:"NUR HASYA KHAYLA BINTI AHMAD SHAH",kelas:"Tahun 6B/6C",jantina:"P",ms:0,status:"Aktif"},{id:"33",nama:"NURUL SYAFIQAH SYAHIRAH BINTI MOHD SANI",kelas:"Tahun 6B/6C",jantina:"P",ms:560,status:"Aktif"},{id:"34",nama:"TUAN NIA NURYNA NAURAH BINTI TUAN IZUDDIN",kelas:"Tahun 6B/6C",jantina:"P",ms:323,status:"Aktif"}];
 let syncing=false;
 
 function ico(j){return j==="L"?"👦🏻":"🧕🏻";}
@@ -520,8 +520,20 @@ async function LD(){
     else if(raw.murid){muridArr=raw.murid;rekodArr=raw.rekod||[];}
     if(muridArr.length>0){
       var sheetIds=muridArr.map(function(x){return String(x.id||x.Id||"");}).filter(Boolean);
+      /* KUNCI FIX: kira dulu ID murid yang MASIH tergantung tempatan
+         (baru ditambah/pinda, belum sempat disahkan Sheets) supaya
+         tak terpadam secara tak sengaja semasa pruning di bawah */
+      var mextraIds=JSON.parse(localStorage.getItem("mextra")||"[]").map(function(x){return String(x.id);});
       for(var i=MURID.length-1;i>=0;i--){
-        if(sheetIds.indexOf(String(MURID[i].id))>=0)MURID.splice(i,1);
+        var midStr=String(MURID[i].id);
+        if(sheetIds.indexOf(midStr)>=0){
+          MURID.splice(i,1); /* akan diganti versi Sheets terkini di bawah */
+        } else if(mextraIds.indexOf(midStr)<0){
+          /* PRUNE: murid ni TIADA dalam Sheets DAN bukan rekod tempatan
+             yang belum sync — ini bermakna ia dah dipadam di peranti lain.
+             Buang dari cache supaya tak "hidup semula" secara hantu. */
+          MURID.splice(i,1);
+        }
       }
       muridArr.forEach(function(m){
         if(!m.id&&!m.nama)return;
@@ -567,8 +579,13 @@ async function LD(){
     }
     localStorage.setItem("mc",JSON.stringify(MURID));
     applyRLtoMURID();
+    window.__lastSyncError=null;
+    window.__lastSyncTime=new Date().toLocaleTimeString("ms-MY");
+    window.__lastSyncCount=muridArr.length;
     if(si){si.textContent="✓ Sync";si.style.background="rgba(100,220,150,.3)";}
   }catch(e){
+    window.__lastSyncError=e.message||String(e);
+    window.__lastSyncTime=new Date().toLocaleTimeString("ms-MY");
     var cached=JSON.parse(localStorage.getItem("mc")||"null");
     if(cached&&cached.length>0){
       cached.forEach(function(m){
@@ -944,16 +961,28 @@ function confirmPwd(){
 }
 
 function doTandaPindah(){
-  var m=MURID.find(function(x){return String(x.id)===String(pendingId);});if(!m)return;
-  m.status="Berpindah";
+  var idx=MURID.findIndex(function(x){return String(x.id)===String(pendingId);});
+  if(idx<0){cMod("m-pwd");return;}
+  var murid=MURID[idx];var nama=murid.nama;
+  murid.status="Berpindah";
+  /* Simpan ke Tong Sampah dengan sebab "Pindah" — terus keluar dari
+     Murid/Dashboard/Rekod, hanya nampak dalam Tong Sampah */
+  var muridRekod=RL.filter(function(r){return String(r.mid)===String(pendingId);});
+  var sampah=JSON.parse(localStorage.getItem("sampah")||"[]");
+  sampah.unshift({murid:murid,rekod:muridRekod,tarikhPadam:new Date().toISOString(),sebab:"Pindah"});
+  localStorage.setItem("sampah",JSON.stringify(sampah.slice(0,50)));
+  MURID.splice(idx,1);
+  RL=RL.filter(function(r){return String(r.mid)!==String(pendingId);});
+  localStorage.setItem("rl",JSON.stringify(RL));
   localStorage.setItem("mc",JSON.stringify(MURID));
   var ex=JSON.parse(localStorage.getItem("mextra")||"[]");
-  var ei=ex.findIndex(function(x){return String(x.id)===String(m.id);});
-  if(ei>=0)ex[ei]=m;else ex.push(m);localStorage.setItem("mextra",JSON.stringify(ex));
-  addLog("Berpindah: "+m.nama,"🔄","var(--am2)");
-  fetch(API,{method:"POST",body:JSON.stringify({action:"kemaskini",id:String(m.id),nama:m.nama,
-    kelas:m.kelas,jantina:m.jantina,ms:m.ms,status:"Berpindah",daftar:m.daftar||""})}).catch(function(){});
-  cMod("m-pwd");cMod("m-edit");rAll();toast("🔄 "+m.nama.split(" ")[0]+" ditandakan Berpindah");
+  ex=ex.filter(function(x){return String(x.id)!==String(pendingId);});
+  localStorage.setItem("mextra",JSON.stringify(ex));
+  addLog("Berpindah (ke Tong Sampah): "+nama,"🔄","var(--am2)");
+  fetch(API,{method:"POST",body:JSON.stringify({action:"hapus",id:pendingId})})
+    .then(function(){LD();}).catch(function(e){console.warn(e);warnSyncFail(nama);});
+  cMod("m-pwd");cMod("m-edit");
+  rAll();renderSampah();toast("🔄 "+nama.split(" ")[0]+" dipindah ke Tong Sampah");
 }
 
 function doHapus(){
@@ -1011,8 +1040,9 @@ function renderSampah(){
   sampah.forEach(function(s,i){
     var tp=new Date(s.tarikhPadam).toLocaleDateString("ms-MY",{day:"2-digit",month:"short",year:"numeric"});
     h+="<div class='mcard'><div style='display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap'>";
-    h+="<div><div style='font-size:13px;font-weight:700'>"+s.murid.nama+"</div>";
-    h+="<div style='font-size:11px;color:var(--tx2);margin-top:2px'>"+(s.murid.kelas||"-")+" &middot; Dipadam: "+tp+"</div></div>";
+    var sebabLbl=s.sebab==="Pindah"?"<span class='bdg am'>🔄 Berpindah</span>":"<span class='bdg rd'>🗑️ Dihapus</span>";
+    h+="<div><div style='display:flex;align-items:center;gap:6px;margin-bottom:3px'><div style='font-size:13px;font-weight:700'>"+s.murid.nama+"</div>"+sebabLbl+"</div>";
+    h+="<div style='font-size:11px;color:var(--tx2)'>"+(s.murid.kelas||"-")+" &middot; "+tp+"</div></div>";
     h+="<div style='display:flex;gap:6px'><button class='btn sm prim' onclick='pulihMurid("+i+")'>♻️ Pulih</button>";
     h+="<button class='btn sm' style='background:var(--rd2);color:var(--rd);border-color:#f5bcbc' onclick='padamKekal("+i+")'>Padam Kekal</button></div>";
     h+="</div></div>";
@@ -1023,6 +1053,7 @@ function renderSampah(){
 function pulihMurid(i){
   var sampah=JSON.parse(localStorage.getItem("sampah")||"[]");
   var item=sampah[i];if(!item)return;
+  item.murid.status="Aktif"; /* Reset status — elak sticky-Berpindah logic terus block murid ni */
   MURID.push(item.murid);
   RL=RL.concat(item.rekod||[]);
   sampah.splice(i,1);
@@ -1128,6 +1159,13 @@ function showPg(id,el){
 function toast(msg,kh){
   var t=document.getElementById("toast");t.textContent=msg;t.className="toast on"+(kh?" kh":"");
   setTimeout(function(){t.className="toast";},3500);
+}
+function showSyncDebug(){
+  var t=window.__lastSyncTime||"belum pernah";
+  var e=window.__lastSyncError;
+  var c=window.__lastSyncCount!==undefined?window.__lastSyncCount:"-";
+  var msg="🔍 DEBUG SYNC\n\nMasa sync terakhir: "+t+"\nMurid dari Sheets: "+c+"\nStatus: "+(e?"❌ GAGAL — "+e:"✅ Berjaya")+"\nJumlah murid di peranti ini: "+MURID.length;
+  alert(msg);
 }
 function warnSyncFail(nama){
   var t=document.getElementById("toast");
