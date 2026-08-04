@@ -515,24 +515,26 @@ async function LD(){
     var res=await fetch(API+"?t="+Date.now(),{cache:"no-store"});
     if(!res.ok)throw new Error("HTTP "+res.status);
     var raw=await res.json();
-    var muridArr=[],rekodArr=[];
+    var muridArr=[],rekodArr=[],dipadamArr=[];
     if(Array.isArray(raw)){muridArr=raw;}
-    else if(raw.murid){muridArr=raw.murid;rekodArr=raw.rekod||[];}
+    else if(raw.murid){muridArr=raw.murid;rekodArr=raw.rekod||[];dipadamArr=raw.dipadam||[];}
     if(muridArr.length>0){
       var sheetIds=muridArr.map(function(x){return String(x.id||x.Id||"");}).filter(Boolean);
       /* KUNCI FIX: kira dulu ID murid yang MASIH tergantung tempatan
          (baru ditambah/pinda, belum sempat disahkan Sheets) supaya
          tak terpadam secara tak sengaja semasa pruning di bawah */
-      var mextraIds=JSON.parse(localStorage.getItem("mextra")||"[]").map(function(x){return String(x.id);});
+      /* Buang HANYA murid yang ada dalam senarai sheet (akan diganti versi terkini).
+         Murid asal (hardcode) yang TIADA dalam Sheets langsung DIKEKALKAN —
+         sebab mereka memang tak pernah disimpan ke Sheets sejak awal. */
       for(var i=MURID.length-1;i>=0;i--){
-        var midStr=String(MURID[i].id);
-        if(sheetIds.indexOf(midStr)>=0){
-          MURID.splice(i,1); /* akan diganti versi Sheets terkini di bawah */
-        } else if(mextraIds.indexOf(midStr)<0){
-          /* PRUNE: murid ni TIADA dalam Sheets DAN bukan rekod tempatan
-             yang belum sync — ini bermakna ia dah dipadam di peranti lain.
-             Buang dari cache supaya tak "hidup semula" secara hantu. */
-          MURID.splice(i,1);
+        if(sheetIds.indexOf(String(MURID[i].id))>=0)MURID.splice(i,1);
+      }
+      /* PRUNE SELAMAT: hanya buang ID yang secara EKSPLISIT disenaraikan
+         dalam "dipadam" (tombstone) daripada Sheets — bukan teka sendiri. */
+      if(dipadamArr&&dipadamArr.length>0){
+        var dipadamIds=dipadamArr.map(function(d){return String(d.id||d);});
+        for(var i=MURID.length-1;i>=0;i--){
+          if(dipadamIds.indexOf(String(MURID[i].id))>=0)MURID.splice(i,1);
         }
       }
       muridArr.forEach(function(m){
