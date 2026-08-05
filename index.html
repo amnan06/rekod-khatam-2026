@@ -740,6 +740,12 @@ function rLog(){
 
 function rKelas(){
   var kp=document.getElementById("kp-lbl");if(kp)kp.textContent=(AK==="Semua"?"Semua":AK.replace("Tahun ",""));
+  /* FIX: gabung KL (tersimpan lokal) dengan kelas SEBENAR yang digunakan
+     oleh murid dalam data — supaya kelas baru tak "hilang" di peranti lain
+     yang tak pernah tekan Tambah Kelas untuk kelas tu */
+  var usedKelas=MURID.map(function(m){return String(m.kelas||"").trim();}).filter(Boolean);
+  usedKelas.forEach(function(k){if(KL.indexOf(k)<0){KL.push(k);}});
+  localStorage.setItem("kl",JSON.stringify(KL));
   var el=document.getElementById("kgrid");if(!el)return;
   var all=["Semua"].concat(KL);var h="";
   all.forEach(function(k){h+="<button class='kelas-item"+(k===AK?" on":"")+"' data-k='"+k+"' onclick='pKelas(this.getAttribute(\"data-k\"))'>"+(k==="Semua"?"📚 Semua Kelas":k)+"</button>";});
